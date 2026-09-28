@@ -1,0 +1,17 @@
+{
+  "type": "varal",
+  "name": "Varal de teto",
+  "group": "Cozinha",
+  "w": 1.0,
+  "d": 0.5,
+  "h": 2.6,
+  "color": "#d9d9d6",
+  "parts": [
+    { "shape": "cylinder", "x": 0, "y": 0.9, "z": -0.4, "sx": 0.012, "sy": 1, "sz": 0.024, "rz": 90, "color": "base", "metalness": 0.6 },
+    { "shape": "cylinder", "x": 0, "y": 0.9, "z": -0.13, "sx": 0.012, "sy": 1, "sz": 0.024, "rz": 90, "color": "base", "metalness": 0.6 },
+    { "shape": "cylinder", "x": 0, "y": 0.9, "z": 0.13, "sx": 0.012, "sy": 1, "sz": 0.024, "rz": 90, "color": "base", "metalness": 0.6 },
+    { "shape": "cylinder", "x": 0, "y": 0.9, "z": 0.4, "sx": 0.012, "sy": 1, "sz": 0.024, "rz": 90, "color": "base", "metalness": 0.6 },
+    { "shape": "box", "x": -0.48, "y": 0.95, "z": 0, "sx": 0.03, "sy": 0.1, "sz": 1, "color": "dark" },
+    { "shape": "box", "x": 0.48, "y": 0.95, "z": 0, "sx": 0.03, "sy": 0.1, "sz": 1, "color": "dark" }
+  ]
+}

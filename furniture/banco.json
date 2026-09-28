@@ -1,0 +1,14 @@
+{
+  "type": "banco",
+  "name": "Banco de madeira",
+  "group": "Jantar",
+  "w": 1.6,
+  "d": 0.35,
+  "h": 0.45,
+  "color": "#5a4326",
+  "parts": [
+    { "shape": "box", "x": 0, "y": 0.95, "z": 0, "sx": 1, "sy": 0.1, "sz": 1, "color": "base", "roughness": 0.55 },
+    { "shape": "box", "x": -0.42, "y": 0.45, "z": 0, "sx": 0.035, "sy": 0.9, "sz": 0.85, "color": "base", "roughness": 0.55 },
+    { "shape": "box", "x": 0.42, "y": 0.45, "z": 0, "sx": 0.035, "sy": 0.9, "sz": 0.85, "color": "base", "roughness": 0.55 }
+  ]
+}

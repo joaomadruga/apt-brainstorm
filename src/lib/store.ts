@@ -40,6 +40,8 @@ interface State extends Snapshot {
   showCeiling: boolean;
   hour: number;
   snap: boolean;
+  /** divisórias (tipo "divisoria") fechadas — só visual, não entra na versão */
+  partitionsClosed: boolean;
   theme: Theme;
   past: Snapshot[];
   future: Snapshot[];
@@ -57,6 +59,7 @@ interface State extends Snapshot {
   setShowCeiling: (v: boolean) => void;
   setHour: (h: number) => void;
   setSnap: (v: boolean) => void;
+  togglePartitions: () => void;
   setTheme: (t: Theme) => void;
   goCamera: (p: CameraPreset) => void;
 
@@ -151,6 +154,7 @@ export const useStore = create<State>()(
       showCeiling: false,
       hour: 10,
       snap: true,
+      partitionsClosed: false,
       theme: "light",
       past: [],
       future: [],
@@ -166,6 +170,7 @@ export const useStore = create<State>()(
       setShowCeiling: (showCeiling) => set({ showCeiling }),
       setHour: (hour) => set({ hour }),
       setSnap: (snap) => set({ snap }),
+      togglePartitions: () => set((s) => ({ partitionsClosed: !s.partitionsClosed })),
       setTheme: (theme) => set({ theme }),
       goCamera: (preset) => set((s) => ({ cameraPreset: { preset, nonce: s.cameraPreset.nonce + 1 } })),
 

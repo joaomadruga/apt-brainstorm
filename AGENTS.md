@@ -64,7 +64,7 @@ Atualize `updatedAt` (ISO 8601) sempre que editar — é assim que o app percebe
 
   "items": [ /* móveis — se omitido, usa só as louças/bancadas do projeto */ ],
   "removedWalls": ["cozinha-sala"],            // ids de paredes (base ou extraWalls)
-  "floors": { "sala": "cimento" },              // madeira | porcelanato | cimento | ceramica | deck
+  "floors": { "sala": "cimento" },              // madeira | carvalho | porcelanato | cimento | ceramica | ladrilho | deck
   "wallColor": "#ede3d3",                       // cor de todas as paredes
   "wallColors": { "bwc-sala": "#3f5f68" },      // cor por parede
 

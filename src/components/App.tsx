@@ -97,6 +97,19 @@ function CaptureModal({ shot, onClose }: { shot: CaptureResult; onClose: () => v
   );
 }
 
+/** Abre/fecha as divisórias camarão (móvel "divisoria") com animação no 3D */
+function PartitionToggle() {
+  const has = useStore((s) => s.items.some((i) => i.type === "divisoria"));
+  const closed = useStore((s) => s.partitionsClosed);
+  const toggle = useStore((s) => s.togglePartitions);
+  if (!has) return null;
+  return (
+    <button className={`partition-toggle ${closed ? "on" : ""}`} onClick={toggle} title="Anima as divisórias camarão do escritório">
+      {closed ? "Abrir escritório" : "Fechar escritório"}
+    </button>
+  );
+}
+
 export default function App({
   repoVersions,
   repoFurniture,
@@ -179,6 +192,7 @@ export default function App({
         {view !== "2d" && (
           <div className="pane">
             <Scene3D />
+            <PartitionToggle />
           </div>
         )}
       </main>

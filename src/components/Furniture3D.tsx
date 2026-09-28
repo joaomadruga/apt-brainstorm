@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { catalogByType, type Item, type Part } from "@/data/catalog";
+import { useStore } from "@/lib/store";
 
 // Cada móvel é montado com primitivas simples no referencial local:
 // largura em x, profundidade em z, "frente" voltada para +z, base em y=0.
@@ -64,11 +66,64 @@ function PartsMesh({ item, parts }: { item: Item; parts: Part[] }) {
   );
 }
 
+/**
+ * Divisória camarão: folhas articuladas que recolhem na ponta +x (dobradas em zigue-zague)
+ * e se estendem pelo vão inteiro (w) quando fechada. Anima ao alternar `partitionsClosed`.
+ */
+const FOLD_OPEN = (84 * Math.PI) / 180; // ângulo das folhas recolhidas
+const FOLD_SECONDS = 1.1;
+
+function leafPose(i: number, t: number, w: number, L: number) {
+  const e = t * t * (3 - 2 * t); // suaviza início e fim
+  const th = FOLD_OPEN * (1 - e); // t = 1 → fechada (folhas alinhadas)
+  const dx = L * Math.cos(th), dz = L * Math.sin(th);
+  const z0 = i % 2 ? dz / 2 : -dz / 2;
+  return { x: w / 2 - (i + 0.5) * dx, rotY: Math.atan2(2 * z0, -dx) };
+}
+
+function DivisoriaMesh({ item }: { item: Item }) {
+  const { w, h, color: c } = item;
+  const closed = useStore((s) => s.partitionsClosed);
+  const n = Math.max(2, Math.round(w / 0.55));
+  const L = w / n;
+  const [t0] = useState(() => (closed ? 1 : 0)); // pose inicial; depois o useFrame move as folhas
+  const t = useRef(t0);
+  const leaves = useRef<(THREE.Group | null)[]>([]);
+  const alt = useMemo(() => shade(c, 0.9), [c]);
+  useFrame((_, dt) => {
+    const target = closed ? 1 : 0;
+    if (t.current === target) return;
+    const step = Math.min(dt, 0.05) / FOLD_SECONDS;
+    t.current = target > t.current ? Math.min(target, t.current + step) : Math.max(target, t.current - step);
+    leaves.current.forEach((g, i) => {
+      if (!g) return;
+      const p = leafPose(i, t.current, w, L);
+      g.position.x = p.x;
+      g.rotation.y = p.rotY;
+    });
+  });
+  return (
+    <group>
+      {/* trilho no teto do vão */}
+      <B p={[0, h - 0.01, 0]} s={[w, 0.02, 0.05]} c="#6b6258" m={0.4} r={0.4} />
+      {Array.from({ length: n }, (_, i) => {
+        const p = leafPose(i, t0, w, L);
+        return (
+          <group key={i} ref={(g) => { leaves.current[i] = g; }} position={[p.x, 0, 0]} rotation={[0, p.rotY, 0]}>
+            <B p={[0, (h - 0.03) / 2 + 0.005, 0]} s={[L - 0.006, h - 0.04, 0.03]} c={i % 2 ? alt : c} r={0.6} />
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 export function FurnitureMesh({ item }: { item: Item }) {
   const { w, d, h, color: c, type } = item;
   const dark = useMemo(() => shade(c, 0.75), [c]);
   const parts = catalogByType[type]?.parts;
   if (parts) return <PartsMesh item={item} parts={parts} />;
+  if (type === "divisoria") return <DivisoriaMesh item={item} />;
   const legs = (lh: number, inset = 0.04, col = "#3a3a3a", t = 0.04) =>
     [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz], i) => (
       <B key={i} p={[sx * (w / 2 - inset), lh / 2, sz * (d / 2 - inset)]} s={[t, lh, t]} c={col} />

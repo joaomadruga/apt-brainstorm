@@ -12,6 +12,7 @@ import { usePlanColors } from "@/lib/theme";
 import { FurnitureMesh } from "./Furniture3D";
 import { Openings3D } from "./Openings3D";
 import { floorFinishes } from "@/lib/materials";
+import { floorTexture } from "@/lib/floorTextures";
 import type { Item } from "@/data/catalog";
 import { registerCapture } from "@/lib/capture";
 
@@ -99,7 +100,11 @@ function Floors({ rooms, walls }: { rooms: Room[]; walls: Wall[] }) {
               select({ kind: "room", id: r.id });
             }}
           >
-            <meshStandardMaterial color={sel ? "#ffd2a8" : f.color} roughness={f.roughness} />
+            <meshStandardMaterial
+              color={sel ? "#ffd2a8" : f.pattern ? "#ffffff" : f.color}
+              map={f.pattern ? floorTexture(f.pattern) : null}
+              roughness={f.roughness}
+            />
           </mesh>
         );
       })}
@@ -161,13 +166,29 @@ function ItemMesh({ item }: { item: Item }) {
   const drag = useRef<{ dx: number; dy: number; moved: boolean } | null>(null);
   const hit = useMemo(() => new THREE.Vector3(), []);
 
+  const endDrag = () => {
+    drag.current = null;
+    if (controls) controls.enabled = true;
+  };
   const onDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     select({ kind: "item", id: item.id });
+    // só o botão esquerdo arrasta o móvel; meio/direito continuam girando a câmera
+    if (e.button !== 0) return;
     if (!e.ray.intersectPlane(floorPlane, hit)) return;
     drag.current = { dx: item.x - hit.x, dy: item.y + hit.z, moved: false };
     (e.target as Element).setPointerCapture(e.pointerId);
     if (controls) controls.enabled = false;
+    // garante que a câmera volta mesmo se o botão for solto fora do objeto
+    const up = () => {
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      window.removeEventListener("blur", up);
+      endDrag();
+    };
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    window.addEventListener("blur", up);
   };
   const onMove = (e: ThreeEvent<PointerEvent>) => {
     if (!drag.current) return;
@@ -186,9 +207,8 @@ function ItemMesh({ item }: { item: Item }) {
   };
   const onUp = (e: ThreeEvent<PointerEvent>) => {
     if (!drag.current) return;
-    (e.target as Element).releasePointerCapture(e.pointerId);
-    drag.current = null;
-    if (controls) controls.enabled = true;
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+    endDrag();
   };
 
   return (

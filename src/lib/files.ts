@@ -5,6 +5,7 @@
 
 import { rooms as baseRooms, walls as baseWalls, type FloorFinish, type Room, type Wall } from "@/data/apartment";
 import { GROUPS, catalogByType, initialItems, type CatalogEntry, type Item } from "@/data/catalog";
+import { floorFinishes } from "./materials";
 import { resolvePlan } from "./plan";
 
 export interface VersionFile {
@@ -86,7 +87,7 @@ export const slugify = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "versao";
 
 // ------------------------------------------------------------------ validação
-const FINISHES: FloorFinish[] = ["madeira", "porcelanato", "cimento", "ceramica", "deck"];
+const FINISHES = Object.keys(floorFinishes) as FloorFinish[];
 const isNum = (v: unknown) => typeof v === "number" && Number.isFinite(v);
 const isHex = (v: unknown) => typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v);
 

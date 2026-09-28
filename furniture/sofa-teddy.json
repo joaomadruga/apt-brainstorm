@@ -1,0 +1,23 @@
+{
+  "type": "sofa-teddy",
+  "name": "Sofá-cama Teddy",
+  "group": "Sala",
+  "w": 2.0,
+  "d": 0.95,
+  "h": 0.75,
+  "color": "#6f7442",
+  "parts": [
+    { "shape": "box", "x": 0, "y": 0.133, "z": 0, "sx": 1, "sy": 0.267, "sz": 1, "color": "base", "roughness": 0.95 },
+    { "shape": "box", "x": 0, "y": 0.413, "z": 0, "sx": 0.995, "sy": 0.293, "sz": 0.99, "color": "light", "roughness": 0.95 },
+    { "shape": "cylinder", "x": -0.185, "y": 0.78, "z": -0.35, "sx": 0.16, "sy": 0.96, "sz": 0.3, "rz": 90, "color": "base", "roughness": 0.95 },
+    { "shape": "cylinder", "x": 0.185, "y": 0.78, "z": -0.35, "sx": 0.16, "sy": 0.96, "sz": 0.3, "rz": 90, "color": "base", "roughness": 0.95 },
+    { "shape": "cylinder", "x": -0.435, "y": 0.76, "z": 0, "sx": 0.13, "sy": 1.2, "sz": 0.316, "rx": 90, "color": "base", "roughness": 0.95 },
+    { "shape": "cylinder", "x": 0.435, "y": 0.76, "z": 0, "sx": 0.13, "sy": 1.2, "sz": 0.316, "rx": 90, "color": "base", "roughness": 0.95 },
+    { "shape": "cylinder", "x": -0.5, "y": 0.367, "z": -0.32, "sx": 0.01, "sy": 0.6, "sz": 0.021, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 },
+    { "shape": "cylinder", "x": -0.5, "y": 0.367, "z": 0.32, "sx": 0.01, "sy": 0.6, "sz": 0.021, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 },
+    { "shape": "cylinder", "x": -0.5, "y": 0.667, "z": 0, "sx": 0.01, "sy": 0.853, "sz": 0.021, "rx": 90, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 },
+    { "shape": "cylinder", "x": 0.5, "y": 0.367, "z": -0.32, "sx": 0.01, "sy": 0.6, "sz": 0.021, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 },
+    { "shape": "cylinder", "x": 0.5, "y": 0.367, "z": 0.32, "sx": 0.01, "sy": 0.6, "sz": 0.021, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 },
+    { "shape": "cylinder", "x": 0.5, "y": 0.667, "z": 0, "sx": 0.01, "sy": 0.853, "sz": 0.021, "rx": 90, "color": "#c9cdd1", "metalness": 0.9, "roughness": 0.2 }
+  ]
+}

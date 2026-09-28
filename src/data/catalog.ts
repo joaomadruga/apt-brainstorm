@@ -57,6 +57,8 @@ export const catalog: CatalogEntry[] = [
   { type: "criado", name: "Criado-mudo", group: "Quarto", w: 0.45, d: 0.4, h: 0.5, color: "#9c6b43" },
   { type: "guardaRoupa", name: "Guarda-roupa", group: "Quarto", w: 1.6, d: 0.58, h: 2.4, color: "#d8cdbd" },
   { type: "escrivaninha", name: "Escrivaninha", group: "Quarto", w: 1.2, d: 0.6, h: 0.75, color: "#b89168" },
+  // w = vão inteiro; as folhas recolhem na ponta +x (direita, vista de frente). Abre/fecha pelo botão no 3D.
+  { type: "divisoria", name: "Divisória camarão (abre/fecha)", group: "Escritório", w: 2.6, d: 0.1, h: 2.1, color: "#c9a57a" },
   { type: "tapete", name: "Tapete", group: "Decoração", w: 2.0, d: 1.4, h: 0.01, color: "#c7b8a3" },
   { type: "planta", name: "Planta", group: "Decoração", w: 0.45, d: 0.45, h: 1.2, color: "#4f7a4a" },
   { type: "luminaria", name: "Luminária de piso", group: "Decoração", w: 0.35, d: 0.35, h: 1.6, color: "#f1e3c2" },

@@ -1,0 +1,14 @@
+{
+  "type": "pendente",
+  "name": "Pendente de papel",
+  "group": "Decoração",
+  "w": 0.55,
+  "d": 0.55,
+  "h": 2.6,
+  "color": "#f1dcb0",
+  "parts": [
+    { "shape": "sphere", "x": 0, "y": 0.712, "z": 0, "sx": 1, "sy": 0.123, "sz": 1, "color": "base", "roughness": 0.95, "opacity": 0.92 },
+    { "shape": "cylinder", "x": 0, "y": 0.887, "z": 0, "sx": 0.018, "sy": 0.227, "sz": 0.018, "color": "#1a1a1a" },
+    { "shape": "cylinder", "x": 0, "y": 0.99, "z": 0, "sx": 0.15, "sy": 0.02, "sz": 0.15, "color": "#1a1a1a" }
+  ]
+}

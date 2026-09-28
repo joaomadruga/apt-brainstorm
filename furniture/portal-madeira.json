@@ -1,0 +1,12 @@
+{
+  "type": "portal-madeira",
+  "name": "Portal / bandeira de madeira",
+  "group": "Escritório",
+  "w": 2.6,
+  "d": 0.12,
+  "h": 2.6,
+  "color": "#c9a57a",
+  "parts": [
+    { "shape": "box", "x": 0, "y": 0.904, "z": 0, "sx": 1, "sy": 0.192, "sz": 1, "color": "base", "roughness": 0.6 }
+  ]
+}

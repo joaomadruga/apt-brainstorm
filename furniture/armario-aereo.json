@@ -1,0 +1,17 @@
+{
+  "type": "armario-aereo",
+  "name": "Armário aéreo c/ coifa",
+  "group": "Cozinha",
+  "w": 2.5,
+  "d": 0.35,
+  "h": 2.6,
+  "color": "#4a3a2a",
+  "parts": [
+    { "shape": "box", "x": 0, "y": 0.74, "z": 0, "sx": 1, "sy": 0.288, "sz": 1, "color": "base", "roughness": 0.55 },
+    { "shape": "box", "x": -0.3, "y": 0.74, "z": 0.5, "sx": 0.004, "sy": 0.28, "sz": 0.02, "color": "dark" },
+    { "shape": "box", "x": -0.1, "y": 0.74, "z": 0.5, "sx": 0.004, "sy": 0.28, "sz": 0.02, "color": "dark" },
+    { "shape": "box", "x": 0.1, "y": 0.74, "z": 0.5, "sx": 0.004, "sy": 0.28, "sz": 0.02, "color": "dark" },
+    { "shape": "box", "x": 0.3, "y": 0.74, "z": 0.5, "sx": 0.004, "sy": 0.28, "sz": 0.02, "color": "dark" },
+    { "shape": "box", "x": 0.38, "y": 0.585, "z": 0.1, "sx": 0.24, "sy": 0.025, "sz": 0.9, "color": "#9aa0a6", "metalness": 0.7, "roughness": 0.3 }
+  ]
+}
