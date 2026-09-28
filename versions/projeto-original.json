@@ -2,7 +2,7 @@
   "id": "projeto-original",
   "name": "Projeto original",
   "description": "Planta do DWG, sem alterações: só louças, bancada, geladeira e tanque do projeto.",
-  "updatedAt": "2026-09-28T00:47:54.628Z",
+  "updatedAt": "2026-09-28T01:32:48.790Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -112,5 +112,13 @@
       "color": "#bfe3ee",
       "fixed": true
     }
-  ]
+  ],
+  "floors": {
+    "hall": "carvalho",
+    "sala": "carvalho",
+    "varanda": "carvalho",
+    "circ": "carvalho",
+    "suite": "carvalho",
+    "quarto": "carvalho"
+  }
 }

@@ -2,7 +2,7 @@
   "id": "suite-ampliada",
   "name": "Suíte ampliada com entrada",
   "description": "A suíte avança sobre a metade oeste da circulação (+0,8 m²) e ganha uma entrada pela sala; cama com cabeceira na parede oeste e guarda-roupa na parede leste, liberando a janela. BWC social continua acessado pela circulação.",
-  "updatedAt": "2026-09-28T01:31:21.276Z",
+  "updatedAt": "2026-09-28T01:32:48.791Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -374,7 +374,13 @@
     "varanda-quarto"
   ],
   "floors": {
-    "hall": "carvalho"
+    "hall": "carvalho",
+    "sala": "carvalho",
+    "varanda": "carvalho",
+    "quarto": "carvalho",
+    "jantar": "carvalho",
+    "suite": "carvalho",
+    "circ": "carvalho"
   },
   "wallColor": "#d0d5de",
   "wallColors": {

@@ -64,8 +64,12 @@ export const normalizeSnapshot = (p: Partial<Snapshot>): Snapshot => {
   };
 };
 
+// o piso de um cômodo redefinido em `rooms` vale sobre o da planta base; `floors` ainda tem a palavra final
 export const fileToSnapshot = (f: VersionFile): Snapshot =>
-  normalizeSnapshot({ ...f, floors: f.floors as Record<string, FloorFinish> | undefined });
+  normalizeSnapshot({
+    ...f,
+    floors: { ...Object.fromEntries((f.rooms ?? []).map((r) => [r.id, r.floor])), ...f.floors } as Record<string, FloorFinish>,
+  });
 
 export function snapshotToFile(id: string, name: string, s: Snapshot, extra: Partial<VersionFile> = {}): VersionFile {
   const o = originalSnapshot();

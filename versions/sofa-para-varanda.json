@@ -2,7 +2,7 @@
   "id": "sofa-para-varanda",
   "name": "Sofá virado para a varanda",
   "description": "Inverte o estar: sofá encostado na parede do BWC, olhando para a varanda e a luz; a TV vai para uma parede curta nova (1,30 m) na linha da antiga porta da varanda — a parede discreta da TV. Varanda continua integrada pelos dois lados da parede.",
-  "updatedAt": "2026-09-28T01:31:21.276Z",
+  "updatedAt": "2026-09-28T01:32:48.791Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -376,7 +376,11 @@
   "floors": {
     "hall": "carvalho",
     "circ": "carvalho",
-    "suite": "carvalho"
+    "suite": "carvalho",
+    "sala": "carvalho",
+    "varanda": "carvalho",
+    "quarto": "carvalho",
+    "jantar": "carvalho"
   },
   "wallColor": "#d0d5de",
   "wallColors": {

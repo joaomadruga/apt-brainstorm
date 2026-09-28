@@ -2,7 +2,7 @@
   "id": "integrado-escritorio",
   "name": "Integrado + escritório abre-e-fecha",
   "description": "Cozinha, sala e varanda integradas (sem cozinha-sala, sala-varanda e cozinha-varanda); quarto vira escritório com portal de madeira e painéis camarão, mesa corrida na janela. BWCs mantidos (shaft). Piso carvalho em réguas em tudo (menos banheiros), ladrilho hidráulico na cozinha/serviço; jantar separado da cozinha. Paleta: azul #46769a, oliva #767a48, cinza #d0d5de, marrom #5a4326.",
-  "updatedAt": "2026-09-28T01:25:48.983Z",
+  "updatedAt": "2026-09-28T01:32:48.789Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -376,7 +376,11 @@
   "floors": {
     "hall": "carvalho",
     "circ": "carvalho",
-    "suite": "carvalho"
+    "suite": "carvalho",
+    "sala": "carvalho",
+    "varanda": "carvalho",
+    "quarto": "carvalho",
+    "jantar": "carvalho"
   },
   "wallColor": "#d0d5de",
   "wallColors": {
