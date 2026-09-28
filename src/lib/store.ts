@@ -151,7 +151,7 @@ export const useStore = create<State>()(
       showCeiling: false,
       hour: 10,
       snap: true,
-      theme: "auto",
+      theme: "light",
       past: [],
       future: [],
       cameraPreset: { preset: "iso", nonce: 0 },
@@ -345,7 +345,7 @@ export const useStore = create<State>()(
     }),
     {
       name: "apto-1707",
-      version: 3,
+      version: 4,
       partialize: (s) => ({
         ...snap(s),
         versions: s.versions, activeId: s.activeId, screen: s.screen, hiddenRepo: s.hiddenRepo,
@@ -358,9 +358,10 @@ export const useStore = create<State>()(
           const v: Version = { id: vid(), name: "Minha planta", data: normalizeSnapshot(p), createdAt: now, updatedAt: now };
           return { ...p, ...normalizeSnapshot(p), versions: [v], activeId: v.id, screen: "versions" } as unknown as State;
         }
-        // v2 → v3: snapshots ganharam paredes/cômodos extras
+        // v2 → v3: snapshots ganharam paredes/cômodos extras · v4: tema padrão = claro
         return {
           ...p,
+          ...(from < 4 ? { theme: "light" as Theme } : {}),
           ...normalizeSnapshot(p),
           versions: (p.versions ?? []).map((v) => ({ ...v, data: normalizeSnapshot(v.data) })),
         } as unknown as State;

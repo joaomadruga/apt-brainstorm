@@ -10,6 +10,7 @@ import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
 import { usePlan, useStore } from "@/lib/store";
 import { usePlanColors } from "@/lib/theme";
 import { FurnitureMesh } from "./Furniture3D";
+import { Openings3D } from "./Openings3D";
 import { floorFinishes } from "@/lib/materials";
 import type { Item } from "@/data/catalog";
 import { registerCapture } from "@/lib/capture";
@@ -39,22 +40,8 @@ function WallMesh({ w, height, edge }: { w: Wall; height: number; edge: string }
           {p.z1 >= H - 1e-3 && height < CEILING && <Edges color={edge} threshold={15} />}
         </mesh>
       ))}
-      {/* vidros das janelas / portas de correr */}
-      {(w.openings ?? [])
-        .filter((o) => o.kind !== "door")
-        .map((o, i) => {
-          const r = openingRect(w, o);
-          const top = Math.min(o.head, height);
-          if (top <= o.sill) return null;
-          const thin = 0.02;
-          const isX = r.x1 - r.x0 > r.y1 - r.y0;
-          return (
-            <mesh key={`g${i}`} position={toW((r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2, (o.sill + top) / 2)}>
-              <boxGeometry args={[isX ? r.x1 - r.x0 : thin, top - o.sill, isX ? thin : r.y1 - r.y0]} />
-              <meshPhysicalMaterial color="#cfe8f2" transparent opacity={0.22} roughness={0.05} metalness={0} />
-            </mesh>
-          );
-        })}
+      {/* janelas, portas de correr e portas de giro */}
+      <Openings3D w={w} height={height} />
       {w.kind === "parapet" && (
         <>
           <mesh position={toW((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, 1.08)} castShadow>

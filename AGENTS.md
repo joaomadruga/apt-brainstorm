@@ -185,6 +185,22 @@ Fonte da geometria: `Alteração Durante a Obra Po 1170 Encanamento_Varanda de C
 (bloco "Tipo alt"); alturas do "Quadro de Esquadrias" do mesmo arquivo. EA1 2,00×2,20 (correr, piso);
 EA3 1,20×1,10 peit. 1,10; EA5 0,60×0,60 peit. 1,60; EA27 1,00×1,10 peit. 1,10; P1 0,80, P2 0,70, P3 0,60 × 2,10.
 
+## Textos da interface (regra)
+
+- **Curto.** Botões com 1–3 palavras; selos/status com até ~4 palavras; avisos em **1 frase**.
+- **Detalhe vai no `title` (tooltip)**, não no corpo da tela. Ex.: o aviso de armazenamento é
+  "⚠️ Edições aqui ficam só neste navegador. Para guardar, use Exportar JSON." e a explicação completa fica
+  no `title`.
+- Nada de parágrafos em cards, sidebar ou modais. Descrições de versão aparecem cortadas em 2 linhas.
+- Mantenha os avisos de "só neste navegador" (a regra de armazenamento acima) — só não os deixe longos.
+
+## Sidebar do editor
+
+Cabeçalho (← Versões, nome editável, selo de status, ⧉ Nova variação) → barra (3D / 2D+3D / 2D, desfazer,
+📸 Capturar) → abas **Móveis** (prévia 3D + miniaturas; clique mostra, duplo clique ou "Adicionar" coloca),
+**Editar** (seleção atual; abre sozinha ao clicar em algo), **Vista** (câmera, teto, grade, luz, tema,
+atalhos). Coisas novas entram numa dessas abas — não crie seções soltas.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

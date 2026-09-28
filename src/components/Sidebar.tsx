@@ -3,14 +3,18 @@
 import { useMemo, useState } from "react";
 import { capture } from "@/lib/capture";
 import { polyArea, type FloorFinish } from "@/data/apartment";
-import { catalog, catalogByType, type FurnitureType } from "@/data/catalog";
+import { GROUPS, catalog, catalogByType, type CatalogEntry, type FurnitureType } from "@/data/catalog";
 import { floorFinishes, wallPalette } from "@/lib/materials";
 import { usePlan, useStore, type Theme } from "@/lib/store";
 import { roomAt } from "@/lib/plan";
+import { LivePreview, ThumbFactory, useThumb } from "./FurniturePreview";
 
-const kindLabel = { ext: "Fachada / divisa", int: "Interna", pillar: "Pilar (estrutural)", parapet: "Guarda-corpo" } as const;
+// Regra de texto da UI: rótulos curtos, avisos em 1 frase, detalhes no `title` (tooltip). Ver AGENTS.md.
 
+const kindLabel = { ext: "Fachada / divisa", int: "Interna", pillar: "Pilar", parapet: "Guarda-corpo" } as const;
+type Tab = "moveis" | "editar" | "vista";
 
+// ------------------------------------------------------------------ Editar (seleção)
 function Inspector() {
   const selection = useStore((s) => s.selection);
   const items = useStore((s) => s.items);
@@ -20,7 +24,12 @@ function Inspector() {
   const s = useStore();
 
   if (!selection)
-    return <p className="muted">Clique num móvel, parede ou piso (no 2D ou no 3D) para editar.</p>;
+    return (
+      <div className="stack">
+        <p className="muted small">Clique num móvel, parede ou piso para editar.</p>
+        <Walls />
+      </div>
+    );
 
   if (selection.kind === "item") {
     const it = items.find((i) => i.id === selection.id);
@@ -39,24 +48,20 @@ function Inspector() {
     );
     return (
       <div className="stack">
-        <strong>{catalogByType[it.type]?.name ?? it.type}{it.fixed ? " · do projeto" : ""}</strong>
-        <div className="row3">{num("w", "Larg.")}{num("d", "Prof.")}{num("h", "Alt.")}</div>
-        <div className="muted small">
-          Posição: x {it.x.toFixed(2)} · y {it.y.toFixed(2)} · {it.rot}° · {roomAt(rooms, it.x, it.y)?.name ?? "fora"}
+        <div className="insp-title">
+          <strong>{catalogByType[it.type]?.name ?? it.type}</strong>
+          <span className="muted small">{roomAt(rooms, it.x, it.y)?.name ?? "fora"}{it.fixed ? " · projeto" : ""}</span>
         </div>
-        <label className="field">
-          <span>Cor</span>
-          <input type="color" value={it.color} onChange={(e) => s.updateItem(it.id, { color: e.target.value })} />
-        </label>
-        <div className="row">
-          <button onClick={() => s.rotateItem(it.id, 90)}>⟲ 90°</button>
-          <button onClick={() => s.rotateItem(it.id, -90)}>⟳ 90°</button>
-          <button onClick={() => s.rotateItem(it.id, 15)}>+15°</button>
-          <button onClick={() => s.rotateItem(it.id, -15)}>−15°</button>
+        <div className="row3">{num("w", "Larg. (m)")}{num("d", "Prof. (m)")}{num("h", "Alt. (m)")}</div>
+        <div className="row compact">
+          <input type="color" value={it.color} onChange={(e) => s.updateItem(it.id, { color: e.target.value })} title="Cor" />
+          <button onClick={() => s.rotateItem(it.id, 90)} title="Girar 90° (R)">⟲ 90°</button>
+          <button onClick={() => s.rotateItem(it.id, -15)} title="Girar 15°">⟳ 15°</button>
+          <span className="muted small">{it.rot}°</span>
         </div>
         <div className="row">
           <button onClick={() => s.duplicateItem(it.id)}>Duplicar</button>
-          <button className="danger" onClick={() => s.removeItem(it.id)}>Remover</button>
+          <button className="danger" onClick={() => s.removeItem(it.id)} title="Del">Remover</button>
         </div>
       </div>
     );
@@ -68,16 +73,15 @@ function Inspector() {
     const isRemoved = removed.includes(w.id);
     const len = Math.max(w.x1 - w.x0, w.y1 - w.y0);
     const thick = Math.min(w.x1 - w.x0, w.y1 - w.y0);
+    const structural = w.kind === "ext" || w.kind === "pillar";
     return (
       <div className="stack">
-        <strong>{w.name}</strong>
-        <div className="muted small">
-          {kindLabel[w.kind]} · {len.toFixed(2)} m × {(thick * 100).toFixed(0)} cm
-          {w.openings?.length ? ` · ${w.openings.map((o) => o.label).join(", ")}` : ""}
+        <div className="insp-title">
+          <strong>{w.name}</strong>
+          <span className="muted small" title={structural ? "Estrutural / fachada — remover é só simulação" : undefined}>
+            {kindLabel[w.kind]} · {len.toFixed(2)} m × {(thick * 100).toFixed(0)} cm{structural ? " · ⚠︎" : ""}
+          </span>
         </div>
-        {(w.kind === "ext" || w.kind === "pillar") && (
-          <div className="warn small">⚠️ Estrutural / fachada — remover aqui é só para brincar.</div>
-        )}
         <button className={isRemoved ? "" : "danger"} onClick={() => s.toggleWall(w.id)}>
           {isRemoved ? "Recolocar parede" : "Remover parede"}
         </button>
@@ -96,12 +100,13 @@ function Inspector() {
   if (!r) return null;
   return (
     <div className="stack">
-      <strong>{r.name}</strong>
-      <div className="muted small">{polyArea(r.poly).toFixed(2)} m²</div>
-      <span className="small">Piso</span>
-      <div className="stack tight">
+      <div className="insp-title">
+        <strong>{r.name}</strong>
+        <span className="muted small">{polyArea(r.poly).toFixed(2)} m²</span>
+      </div>
+      <div className="finishes">
         {(Object.keys(floorFinishes) as FloorFinish[]).map((f) => (
-          <button key={f} className={floors[r.id] === f ? "on" : ""} onClick={() => s.setFloor(r.id, f)}>
+          <button key={f} className={(floors[r.id] ?? r.floor) === f ? "on" : ""} onClick={() => s.setFloor(r.id, f)}>
             <span className="dot" style={{ background: floorFinishes[f].color }} /> {floorFinishes[f].name}
           </button>
         ))}
@@ -110,6 +115,143 @@ function Inspector() {
   );
 }
 
+function Walls() {
+  const s = useStore();
+  return (
+    <div className="stack tight">
+      <span className="label">Cor das paredes</span>
+      <div className="swatches">
+        {wallPalette.map((p) => (
+          <button key={p.color} title={p.name} className={`swatch ${s.wallColor === p.color ? "on" : ""}`} style={{ background: p.color }} onClick={() => s.setWallColor(p.color)} />
+        ))}
+      </div>
+      {s.removedWalls.length > 0 && (
+        <button onClick={s.restoreWalls}>Recolocar paredes removidas ({s.removedWalls.length})</button>
+      )}
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ Móveis
+function Thumb({ c, active, onPick, onAdd }: { c: CatalogEntry; active: boolean; onPick: () => void; onAdd: () => void }) {
+  const url = useThumb(c.type);
+  return (
+    <button className={`fcard ${active ? "on" : ""}`} onClick={onPick} onDoubleClick={onAdd} title={`${c.name} · ${c.w}×${c.d}×${c.h} m — duplo clique adiciona`}>
+      <span className="fthumb">
+        {url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={url} alt="" />
+        ) : (
+          <span className="dot" style={{ background: c.color, width: 18, height: 18 }} />
+        )}
+      </span>
+      <span className="fname">{c.name}</span>
+    </button>
+  );
+}
+
+function FurnitureTab() {
+  const s = useStore();
+  const { rooms } = usePlan();
+  const [group, setGroup] = useState<string>("Todos");
+  const [q, setQ] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
+  const groups = useMemo(() => ["Todos", ...GROUPS.filter((g) => catalog.some((c) => c.group === g))], []);
+  const list = catalog.filter(
+    (c) => (group === "Todos" || c.group === group) && (!q || c.name.toLowerCase().includes(q.toLowerCase())),
+  );
+  const entry = picked ? catalogByType[picked] : null;
+
+  const add = (t: FurnitureType) => {
+    // no centro do cômodo selecionado (ou do cômodo do móvel selecionado, ou da sala)
+    const sel = s.selection;
+    let room = rooms.find((r) => r.id === "sala") ?? rooms[0];
+    if (sel?.kind === "room") room = rooms.find((r) => r.id === sel.id) ?? room;
+    if (sel?.kind === "item") {
+      const it = s.items.find((i) => i.id === sel.id);
+      if (it) room = roomAt(rooms, it.x, it.y) ?? room;
+    }
+    s.addItem(t, room.label[0], room.label[1] - 0.4);
+  };
+
+  return (
+    <div className="stack">
+      <ThumbFactory entries={catalog} />
+      {entry ? (
+        <div className="fpreview">
+          <div className="fpreview-3d">
+            <LivePreview entry={entry} />
+          </div>
+          <div className="fpreview-info">
+            <strong>{entry.name}</strong>
+            <span className="muted small">{entry.w} × {entry.d} × {entry.h} m</span>
+            <div className="row">
+              <button className="primary" onClick={() => add(entry.type)}>Adicionar</button>
+              <button className="ghost" onClick={() => setPicked(null)}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="muted small">Clique num móvel para ver em 3D.</p>
+      )}
+      <input className="search" placeholder="Buscar móvel…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="chips">
+        {groups.map((g) => (
+          <button key={g} className={`chip-s ${group === g ? "on" : ""}`} onClick={() => setGroup(g)}>{g}</button>
+        ))}
+      </div>
+      <div className="fgrid">
+        {list.map((c) => (
+          <Thumb key={c.type} c={c} active={picked === c.type} onPick={() => setPicked(c.type)} onAdd={() => add(c.type)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ Vista
+function ViewTab() {
+  const s = useStore();
+  const hh = `${String(Math.floor(s.hour)).padStart(2, "0")}:${String(Math.round((s.hour % 1) * 60)).padStart(2, "0")}`;
+  return (
+    <div className="stack">
+      <span className="label">Câmera</span>
+      <div className="seg3">
+        <button onClick={() => { s.setCutaway(true); s.setShowCeiling(false); s.goCamera("iso"); }}>Maquete</button>
+        <button onClick={() => s.goCamera("top")}>Topo</button>
+        <button onClick={() => s.goCamera("eye")} title="W A S D anda · Q / E vira">Olho humano</button>
+      </div>
+      <label className="check"><input type="checkbox" checked={s.cutaway} onChange={(e) => s.setCutaway(e.target.checked)} /> Paredes cortadas</label>
+      <label className="check" title="Aparece com as paredes inteiras"><input type="checkbox" checked={s.showCeiling} onChange={(e) => s.setShowCeiling(e.target.checked)} /> Teto</label>
+      <label className="check"><input type="checkbox" checked={s.snap} onChange={(e) => s.setSnap(e.target.checked)} /> Grade de 5 cm</label>
+      <label className="field">
+        <span>Luz do dia · {hh}</span>
+        <input type="range" min={5.5} max={19} step={0.25} value={s.hour} onChange={(e) => s.setHour(Number(e.target.value))} />
+      </label>
+      <span className="label">Tema</span>
+      <div className="seg3">
+        {(["light", "dark", "auto"] as Theme[]).map((t) => (
+          <button key={t} className={s.theme === t ? "on" : ""} onClick={() => s.setTheme(t)}>
+            {t === "auto" ? "Sistema" : t === "light" ? "Claro" : "Escuro"}
+          </button>
+        ))}
+      </div>
+      <details className="small muted">
+        <summary>Atalhos</summary>
+        <ul className="keys">
+          <li><kbd>arrastar</kbd> move móvel / vista</li>
+          <li><kbd>roda</kbd> zoom · <kbd>clique na roda</kbd> gira</li>
+          <li><kbd>R</kbd> gira móvel · <kbd>Del</kbd> remove</li>
+          <li><kbd>W A S D</kbd> anda · <kbd>Q E</kbd> vira</li>
+          <li><kbd>⌘Z</kbd> desfaz · <kbd>P</kbd> captura</li>
+        </ul>
+      </details>
+      <button className="ghost danger" onClick={() => confirm("Voltar esta versão ao projeto original?") && s.reset()}>Resetar versão</button>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ cabeçalho
 function VersionName() {
   const version = useStore((s) => s.versions.find((v) => v.id === s.activeId));
   const rename = useStore((s) => s.renameVersion);
@@ -131,8 +273,8 @@ function VersionName() {
       />
     );
   return (
-    <h1 title="Clique para renomear" style={{ cursor: "text" }} onClick={() => { setName(version.name); setEditing(true); }}>
-      {version.name} <span className="muted small">✎</span>
+    <h1 title="Clique para renomear" className="vname" onClick={() => { setName(version.name); setEditing(true); }}>
+      {version.name}
     </h1>
   );
 }
@@ -156,141 +298,72 @@ async function thumbnail(): Promise<string | undefined> {
 
 export default function Sidebar({ onCapture }: { onCapture: () => void }) {
   const s = useStore();
-  const { rooms } = usePlan();
   const version = s.versions.find((v) => v.id === s.activeId);
+  const [tab, setTab] = useState<Tab>("moveis");
+  // ao selecionar algo no 2D/3D, abre a aba "Editar"
+  const selKey = s.selection ? `${s.selection.kind}:${s.selection.id}` : "";
+  const [lastSel, setLastSel] = useState(selKey);
+  if (selKey !== lastSel) {
+    setLastSel(selKey);
+    if (selKey) setTab("editar");
+  }
+
   const goVersions = async () => {
     const id = s.activeId;
     const t = await thumbnail();
     if (id && t) s.setThumb(id, t);
     s.setScreen("versions");
   };
-  const groups = useMemo(() => {
-    const g: Record<string, typeof catalog> = {};
-    catalog.forEach((c) => (g[c.group] ??= []).push(c));
-    return g;
-  }, []);
-
-  const add = (t: FurnitureType) => {
-    // coloca no centro do cômodo selecionado (ou na sala)
-    const sel = s.selection;
-    let room = rooms.find((r) => r.id === "sala") ?? rooms[0];
-    if (sel?.kind === "room") room = rooms.find((r) => r.id === sel.id) ?? room;
-    if (sel?.kind === "item") {
-      const it = s.items.find((i) => i.id === sel.id);
-      if (it) room = roomAt(rooms, it.x, it.y) ?? room;
-    }
-    s.addItem(t, room.label[0], room.label[1] - 0.4);
+  const saveAs = () => {
+    const n = prompt("Nome da nova versão:", version ? `${version.name} — variação` : "Nova versão");
+    if (n === null) return;
+    s.syncActive();
+    s.openVersion(s.duplicateVersion(s.activeId!, n));
   };
+  const status = !version?.repo ? "Só neste navegador" : version.dirty ? "Editada · só neste navegador" : "Igual ao repo";
 
   return (
     <aside className="sidebar">
-      <header className="stack tight">
-        <button className="ghost back" onClick={goVersions}>← Versões</button>
-        <VersionName />
-        <div className="muted small">Apto 1707 · Casa Forte · 52,71 m²</div>
-        <div className="localnote small">
-          <strong>⚠️ Só neste navegador.</strong> O que você mexe aqui fica guardado apenas neste navegador
-          {version?.repo ? " (por cima da versão do repositório)" : ""} — <strong>não é salvo no repositório nem em
-          nenhum servidor</strong>. Para guardar de verdade, use “Exportar JSON” na tela de versões.
+      <header className="sb-head">
+        <div className="row between">
+          <button className="ghost back" onClick={goVersions}>← Versões</button>
+          <button className="ghost small" onClick={saveAs} title="Duplicar esta versão com outro nome">⧉ Nova variação</button>
         </div>
-        <button
-          onClick={() => {
-            const cur = s.versions.find((v) => v.id === s.activeId);
-            const n = prompt("Nome da nova versão:", cur ? `${cur.name} — variação` : "Nova versão");
-            if (n === null) return;
-            s.syncActive();
-            const id = s.duplicateVersion(s.activeId!, n);
-            s.openVersion(id);
-          }}
+        <VersionName />
+        <span
+          className={`vstatus ${version?.repo && !version.dirty ? "repo" : "warn"}`}
+          title="Edições feitas no app ficam só neste navegador — não vão para o repositório. Para guardar: Exportar JSON na tela de versões."
         >
-          Salvar como nova versão
-        </button>
+          {status} ⓘ
+        </span>
       </header>
 
-      <section>
-        <div className="seg theme">
-          {(["auto", "light", "dark"] as Theme[]).map((t) => (
-            <button key={t} className={s.theme === t ? "on" : ""} onClick={() => s.setTheme(t)} title="Tema">
-              {t === "auto" ? "◐ Auto" : t === "light" ? "☀︎ Claro" : "☾ Escuro"}
-            </button>
-          ))}
-        </div>
-        <div className="seg">
+      <div className="sb-tools">
+        <div className="seg3">
           {(["3d", "split", "2d"] as const).map((v) => (
             <button key={v} className={s.view === v ? "on" : ""} onClick={() => s.setView(v)}>
-              {v === "3d" ? "3D" : v === "2d" ? "2D" : "2D + 3D"}
+              {v === "3d" ? "3D" : v === "2d" ? "2D" : "2D+3D"}
             </button>
           ))}
         </div>
-      </section>
-
-      <section>
-        <h2>Câmera</h2>
-        <div className="row">
-          <button onClick={() => { s.setCutaway(true); s.setShowCeiling(false); s.goCamera("iso"); }}>Maquete</button>
-          <button onClick={() => s.goCamera("top")}>Topo</button>
-          <button onClick={() => s.goCamera("eye")}>Olho humano</button>
+        <div className="row compact">
+          <button onClick={s.undo} disabled={!s.past.length} title="Desfazer (⌘Z)">↶</button>
+          <button onClick={s.redo} disabled={!s.future.length} title="Refazer (⌘⇧Z)">↷</button>
+          <button className="primary grow" onClick={onCapture} title="Captura PNG do ângulo atual + prompt (P)">📸 Capturar</button>
         </div>
-        <label className="check"><input type="checkbox" checked={s.cutaway} onChange={(e) => s.setCutaway(e.target.checked)} /> Paredes cortadas (1,25 m)</label>
-        <label className="check"><input type="checkbox" checked={s.showCeiling} onChange={(e) => s.setShowCeiling(e.target.checked)} /> Teto (só com paredes inteiras)</label>
-        <label className="field">
-          <span>Luz do dia · {String(Math.floor(s.hour)).padStart(2, "0")}:{String(Math.round((s.hour % 1) * 60)).padStart(2, "0")}</span>
-          <input type="range" min={5.5} max={19} step={0.25} value={s.hour} onChange={(e) => s.setHour(Number(e.target.value))} />
-        </label>
-        <button className="primary" onClick={onCapture}>📸 Capturar vista (P)</button>
-      </section>
+      </div>
 
-      <section>
-        <h2>Selecionado</h2>
-        <Inspector />
-      </section>
-
-      <section>
-        <h2>Adicionar móveis</h2>
-        {Object.entries(groups).map(([g, list]) => (
-          <details key={g} open={g === "Sala" || g === "Quarto"}>
-            <summary>{g}</summary>
-            <div className="catalog">
-              {list.map((c) => (
-                <button key={c.type + c.name} onClick={() => add(c.type)} title={`${c.w}×${c.d}×${c.h} m`}>
-                  <span className="dot" style={{ background: c.color }} />
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </details>
+      <nav className="tabs">
+        {([["moveis", "Móveis"], ["editar", "Editar"], ["vista", "Vista"]] as const).map(([k, l]) => (
+          <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>
         ))}
-      </section>
+      </nav>
 
-      <section>
-        <h2>Paredes</h2>
-        <div className="swatches">
-          {wallPalette.map((p) => (
-            <button key={p.color} title={`${p.name} (todas)`} className={`swatch ${s.wallColor === p.color ? "on" : ""}`} style={{ background: p.color }} onClick={() => s.setWallColor(p.color)} />
-          ))}
-        </div>
-        <div className="row">
-          <button onClick={s.restoreWalls} disabled={!s.removedWalls.length}>Recolocar todas ({s.removedWalls.length})</button>
-        </div>
-      </section>
-
-      <section>
-        <div className="row">
-          <button onClick={s.undo} disabled={!s.past.length}>↶ Desfazer</button>
-          <button onClick={s.redo} disabled={!s.future.length}>↷ Refazer</button>
-          <button onClick={() => s.setSnap(!s.snap)} className={s.snap ? "on" : ""}>Grade 5 cm</button>
-        </div>
-        <button className="ghost" onClick={() => confirm("Voltar ao projeto original?") && s.reset()}>Resetar tudo</button>
-        <details className="small muted">
-          <summary>Atalhos</summary>
-          <ul>
-            <li>Arrastar: mover móvel · R / Shift+R: girar 90° · Del: remover</li>
-            <li>3D: arrastar = mover a vista · clicar na roda (ou botão direito, ou Shift+arrastar) e arrastar = girar · roda = zoom</li>
-            <li>W A S D: andar · Q / E: virar · Shift: correr</li>
-            <li>Ctrl/⌘+Z desfazer · Ctrl/⌘+Shift+Z refazer · P: capturar</li>
-          </ul>
-        </details>
-      </section>
+      <div className="sb-body">
+        {tab === "moveis" && <FurnitureTab />}
+        {tab === "editar" && <Inspector />}
+        {tab === "vista" && <ViewTab />}
+      </div>
     </aside>
   );
 }

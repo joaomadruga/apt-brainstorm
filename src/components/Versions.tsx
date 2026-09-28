@@ -59,15 +59,16 @@ function diffSummary(v: Version) {
   const removedFixtures = o.items.filter((i) => !v.data.items.some((x) => x.id === i.id)).length;
   const floorsChanged = baseRooms.filter((r) => v.data.floors[r.id] !== o.floors[r.id]).length;
   const geo = v.data.extraWalls.length + v.data.rooms.length + v.data.removedRooms.length;
+  const n = (k: number, one: string, many: string) => (k ? `${k} ${k === 1 ? one : many}` : "");
   const parts = [
-    v.data.removedWalls.length ? `${v.data.removedWalls.length} parede(s) removida(s)` : "",
-    added ? `${added} móvel(is)` : "",
-    removedFixtures ? `${removedFixtures} peça(s) do projeto tirada(s)` : "",
-    floorsChanged ? `${floorsChanged} piso(s) trocado(s)` : "",
-    geo ? `${geo} edição(ões) de paredes/cômodos` : "",
-    v.data.wallColor !== o.wallColor || Object.keys(v.data.wallColors).length ? "cores de parede" : "",
+    n(v.data.removedWalls.length, "parede a menos", "paredes a menos"),
+    n(added, "móvel", "móveis"),
+    n(removedFixtures, "peça do projeto tirada", "peças do projeto tiradas"),
+    n(floorsChanged, "piso trocado", "pisos trocados"),
+    n(geo, "edição de planta", "edições de planta"),
+    v.data.wallColor !== o.wallColor || Object.keys(v.data.wallColors).length ? "cores" : "",
   ].filter(Boolean);
-  return parts.length ? parts.join(" · ") : "Igual ao projeto original";
+  return parts.length ? parts.join(" · ") : "Sem mudanças";
 }
 
 function toFile(v: Version, taken: Set<string>): VersionFile {
@@ -90,10 +91,10 @@ function download(file: VersionFile) {
 }
 
 function StatusBadge({ v }: { v: Version }) {
-  if (v.repo && v.repoChanged) return <span className="vstatus warn">repo atualizado · você tem alterações locais</span>;
-  if (v.repo && v.dirty) return <span className="vstatus warn">alterada neste navegador · não salva no repo</span>;
-  if (v.repo) return <span className="vstatus repo">repo · versions/{v.repo.id}.json</span>;
-  return <span className="vstatus local">só neste navegador · não está no repo</span>;
+  if (v.repo && v.repoChanged) return <span className="vstatus warn" title="O arquivo no repositório mudou e você tem edições locais nesta versão">Repo mudou · edição local</span>;
+  if (v.repo && v.dirty) return <span className="vstatus warn" title="Editada neste navegador — não salva no repositório">Editada · só aqui</span>;
+  if (v.repo) return <span className="vstatus repo" title={`versions/${v.repo.id}.json`}>Repo</span>;
+  return <span className="vstatus local" title="Criada neste navegador — não está no repositório">Só aqui</span>;
 }
 
 function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean }) {
@@ -107,7 +108,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
     const body = await res.json();
     if (!res.ok) return setMsg(`Erro: ${body.error}${body.errors ? ` — ${body.errors.join("; ")}` : ""}`);
     s.markSavedToRepo(v.id, file);
-    setMsg(`✓ Gravado em ${body.path}. Falta commitar e dar push.`);
+    setMsg(`✓ ${body.path} — falta commitar`);
   };
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(v.name);
@@ -153,9 +154,9 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
           <strong onDoubleClick={() => setEditing(true)} title="Duplo clique para renomear">{v.name}</strong>
         )}
         <StatusBadge v={v} />
-        {v.description && <span className="small">{v.description}</span>}
+        {v.description && <span className="small clamp2" title={v.description}>{v.description}</span>}
         <span className="small muted">{diffSummary(v)}</span>
-        <span className="small muted">Editada {fmt(v.updatedAt)} · criada {fmt(v.createdAt)}</span>
+        <span className="small muted" title={`Criada ${fmt(v.createdAt)}`}>Editada {fmt(v.updatedAt)}</span>
       </div>
       <div className="row">
         <button className="primary" onClick={() => s.openVersion(v.id)}>Abrir</button>
@@ -176,14 +177,14 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
       </div>
       <div className="row">
         <button onClick={() => download(toFile(v, taken))} title="Baixa o arquivo para colocar em /versions e commitar">
-          ⬇ Exportar JSON
+          ⬇ JSON
         </button>
         {canSaveToRepo && (!v.repo || v.dirty) && (
-          <button onClick={saveToRepo} title="Grava /versions/<id>.json no disco (só rodando local)">💾 Salvar em versions/</button>
+          <button onClick={saveToRepo} title="Grava /versions/<id>.json no disco (só rodando local)">💾 Salvar no repo</button>
         )}
         {v.repo && (v.dirty || v.repoChanged) && (
           <button onClick={() => confirm("Descartar as alterações deste navegador e voltar para a versão do repositório?") && s.revertToRepo(v.id)}>
-            ↺ Descartar alterações locais
+            ↺ Descartar edição
           </button>
         )}
       </div>
@@ -233,26 +234,25 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
       <header className="vheader">
         <div>
           <h1>Apto 1707 · Versões</h1>
-          <div className="muted small">Cada versão guarda paredes, cômodos, móveis, pisos e cores.</div>
+          <div className="muted small">Paredes, cômodos, móveis, pisos e cores de cada ideia.</div>
         </div>
         <div className="theme-inline">
           <ThemeSwitch />
         </div>
       </header>
 
-      <div className="localnote">
-        <strong>⚠️ Onde as coisas ficam salvas:</strong> as versões marcadas <em>repo</em> vêm da pasta <code>versions/</code> do
-        repositório (é o que aparece para todo mundo). <strong>Qualquer alteração feita aqui no app — criar, editar, mover,
-        renomear — fica só neste navegador</strong>: não vai para o repositório, nem para a Vercel, nem para outro computador, e
-        some se você limpar os dados do site. Para guardar de verdade: <strong>⬇ Exportar JSON</strong> e commitar o arquivo
-        em <code>versions/</code> (ou peça para um agent fazer isso).
-        {canSaveToRepo && <> Rodando local (<code>npm run dev</code>), dá para usar <strong>💾 Salvar em versions/</strong> e depois commitar.</>}
+      <div
+        className="localnote"
+        title="Versões “repo” vêm de versions/ no repositório. Criar, editar ou renomear aqui não sai deste navegador. Para guardar: Exportar JSON e commitar em versions/."
+      >
+        ⚠️ Edições aqui ficam só neste navegador. Para guardar, use <strong>Exportar JSON</strong>
+        {canSaveToRepo ? <> ou <strong>Salvar em versions/</strong></> : null}.
       </div>
 
       <section className="vnew">
         <strong>Nova versão</strong>
         <input
-          placeholder={`Nome (ex.: "Sala integrada com cozinha")`}
+          placeholder="Nome da versão"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && create(true)}
@@ -260,10 +260,10 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
         <label className="small muted">
           Começar de{" "}
           <select value={from} onChange={(e) => setFrom(e.target.value)}>
-            <option value="original">Projeto original (planta do DWG)</option>
+            <option value="original">Projeto original</option>
             {versions.map((v) => (
               <option key={v.id} value={v.id}>
-                Cópia de “{v.name}”
+                {v.name}
               </option>
             ))}
           </select>
