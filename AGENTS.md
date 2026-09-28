@@ -129,7 +129,7 @@ Retângulo alinhado aos eixos: `x0 < x1`, `y0 < y1`. O eixo mais longo é o "com
 - `poly` = contorno do piso (face interna das paredes), sentido qualquer, sem repetir o primeiro ponto.
 - `label` = onde o nome/área aparecem. Mesmo `id` de um cômodo base → substitui (ex.: redesenhar a `suite`
   quando um closet come parte dela). O cômodo define piso, rótulo, área e "em que cômodo está a câmera" no prompt.
-- Exemplo completo: `versions/suite-com-closet.json` (duas paredes novas + suíte redesenhada + closet).
+- Exemplo completo: `versions/suite-ampliada.json` (paredes novas + suíte e circulação redesenhadas).
 
 ---
 
