@@ -5,9 +5,10 @@ import { OrbitControls, Edges } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { CEILING, bounds, center, rooms, walls, type Wall } from "@/data/apartment";
+import { CEILING, bounds, center, type Room, type Wall } from "@/data/apartment";
 import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
-import { useStore } from "@/lib/store";
+import { usePlan, useStore } from "@/lib/store";
+import { usePlanColors } from "@/lib/theme";
 import { FurnitureMesh } from "./Furniture3D";
 import { floorFinishes } from "@/lib/materials";
 import type { Item } from "@/data/catalog";
@@ -17,7 +18,7 @@ const CUT_H = 1.25; // altura das paredes no modo "maquete"
 const toW = (x: number, y: number, z = 0) => new THREE.Vector3(x, z, -y);
 
 // ---------------------------------------------------------------- walls
-function WallMesh({ w, height }: { w: Wall; height: number }) {
+function WallMesh({ w, height, edge }: { w: Wall; height: number; edge: string }) {
   const selection = useStore((s) => s.selection);
   const select = useStore((s) => s.select);
   const baseColor = useStore((s) => s.wallColors[w.id] ?? s.wallColor);
@@ -35,7 +36,7 @@ function WallMesh({ w, height }: { w: Wall; height: number }) {
         <mesh key={i} position={toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2)} castShadow receiveShadow>
           <boxGeometry args={[p.x1 - p.x0, p.z1 - p.z0, p.y1 - p.y0]} />
           <meshStandardMaterial color={sel ? "#ff8a3d" : color} roughness={0.92} />
-          {p.z1 >= H - 1e-3 && height < CEILING && <Edges color="#8d867c" threshold={15} />}
+          {p.z1 >= H - 1e-3 && height < CEILING && <Edges color={edge} threshold={15} />}
         </mesh>
       ))}
       {/* vidros das janelas / portas de correr */}
@@ -71,7 +72,7 @@ function WallMesh({ w, height }: { w: Wall; height: number }) {
 }
 
 // ---------------------------------------------------------------- floors
-function Floors() {
+function Floors({ rooms, walls }: { rooms: Room[]; walls: Wall[] }) {
   const floors = useStore((s) => s.floors);
   const select = useStore((s) => s.select);
   const selection = useStore((s) => s.selection);
@@ -83,7 +84,7 @@ function Floors() {
         r.poly.forEach(([x, y], i) => (i ? sh.lineTo(x, y) : sh.moveTo(x, y)));
         return new THREE.ShapeGeometry(sh);
       }),
-    [],
+    [rooms],
   );
   // piso sob vãos de porta e sob paredes removidas (para não ficar buraco)
   const patches = useMemo(() => {
@@ -93,11 +94,11 @@ function Floors() {
       else for (const o of w.openings ?? []) if (o.sill === 0) out.push(openingRect(w, o));
     }
     return out;
-  }, [removed]);
+  }, [removed, walls]);
   return (
     <group>
       {rooms.map((r, i) => {
-        const f = floorFinishes[floors[r.id]];
+        const f = floorFinishes[floors[r.id] ?? r.floor];
         const sel = selection?.kind === "room" && selection.id === r.id;
         return (
           <mesh
@@ -125,7 +126,7 @@ function Floors() {
   );
 }
 
-function Ceiling() {
+function Ceiling({ rooms }: { rooms: Room[] }) {
   const geo = useMemo(() => {
     const g: THREE.ShapeGeometry[] = [];
     for (const r of rooms) {
@@ -135,7 +136,7 @@ function Ceiling() {
       g.push(new THREE.ShapeGeometry(sh));
     }
     return g;
-  }, []);
+  }, [rooms]);
   // normal para cima + BackSide = só aparece olhando de baixo
   return (
     <group position={[0, CEILING, 0]}>
@@ -148,13 +149,13 @@ function Ceiling() {
   );
 }
 
-function Plinth() {
+function Plinth({ color }: { color: string }) {
   const w = bounds.maxX - bounds.minX + 0.6;
   const d = bounds.maxY - bounds.minY + 0.6;
   return (
     <mesh position={toW(center[0], (bounds.minY + bounds.maxY) / 2, -0.16)} receiveShadow>
       <boxGeometry args={[w, 0.3, d]} />
-      <meshStandardMaterial color="#d6d0c6" roughness={1} />
+      <meshStandardMaterial color={color} roughness={1} />
     </mesh>
   );
 }
@@ -390,24 +391,31 @@ function World() {
   const cutaway = useStore((s) => s.cutaway);
   const showCeiling = useStore((s) => s.showCeiling);
   const removed = useStore((s) => s.removedWalls);
+  const { walls, rooms } = usePlan();
+  const C = usePlanColors();
   const items = useStore((s) => s.items);
   const select = useStore((s) => s.select);
   const height = cutaway ? CUT_H : CEILING;
   return (
     <group onPointerMissed={() => select(null)}>
-      <Plinth />
-      <Floors />
+      <Plinth color={C.plinth} />
+      <Floors rooms={rooms} walls={walls} />
       {walls
         .filter((w) => !removed.includes(w.id))
         .map((w) => (
-          <WallMesh key={w.id} w={w} height={height} />
+          <WallMesh key={w.id} w={w} height={height} edge={C.edge} />
         ))}
       {items.map((i) => (
         <ItemMesh key={i.id} item={i} />
       ))}
-      {showCeiling && !cutaway && <Ceiling />}
+      {showCeiling && !cutaway && <Ceiling rooms={rooms} />}
     </group>
   );
+}
+
+function Background() {
+  const C = usePlanColors();
+  return <color attach="background" args={[C.scene]} />;
 }
 
 export default function Scene3D() {
@@ -419,9 +427,8 @@ export default function Scene3D() {
       gl={{ preserveDrawingBuffer: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       camera={{ position: TARGET.clone().add(ISO_OFFSET).toArray(), fov: 40, near: 0.05, far: 200 }}
       onPointerMissed={() => select(null)}
-      style={{ background: "linear-gradient(#e9e4dc, #cfc7bb)" }}
     >
-      <color attach="background" args={["#e4ded5"]} />
+      <Background />
       <Sun />
       <World />
       <OrbitControls

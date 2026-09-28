@@ -1,0 +1,116 @@
+{
+  "id": "projeto-original",
+  "name": "Projeto original",
+  "description": "Planta do DWG, sem alterações: só louças, bancada, geladeira e tanque do projeto.",
+  "updatedAt": "2026-09-28T00:47:54.628Z",
+  "items": [
+    {
+      "id": "fx-bancada-3.29-6.97",
+      "type": "bancada",
+      "rot": 0,
+      "x": 4.545,
+      "y": 7.271,
+      "w": 2.51,
+      "d": 0.602,
+      "h": 0.9,
+      "color": "#e8e4dc",
+      "fixed": true
+    },
+    {
+      "id": "fx-geladeira-5.82-6.93",
+      "type": "geladeira",
+      "rot": 0,
+      "x": 6.1,
+      "y": 7.245,
+      "w": 0.56,
+      "d": 0.63,
+      "h": 1.8,
+      "color": "#d7dadd",
+      "fixed": true
+    },
+    {
+      "id": "fx-tanque-6.46-6.84",
+      "type": "tanque",
+      "rot": 0,
+      "x": 6.735,
+      "y": 7.06,
+      "w": 0.55,
+      "d": 0.44,
+      "h": 0.85,
+      "color": "#f2f2f2",
+      "fixed": true
+    },
+    {
+      "id": "fx-box-2.93-0.76",
+      "type": "box",
+      "rot": 0,
+      "x": 3.333,
+      "y": 1.201,
+      "w": 0.814,
+      "d": 0.879,
+      "h": 2,
+      "color": "#bfe3ee",
+      "fixed": true
+    },
+    {
+      "id": "fx-pia-3.74-0.76",
+      "type": "pia",
+      "rot": 180,
+      "x": 4.141,
+      "y": 1.011,
+      "w": 0.801,
+      "d": 0.499,
+      "h": 0.85,
+      "color": "#efece6",
+      "fixed": true
+    },
+    {
+      "id": "fx-vaso-2.93-1.79",
+      "type": "vaso",
+      "rot": 90,
+      "x": 3.133,
+      "y": 1.99,
+      "w": 0.4,
+      "d": 0.414,
+      "h": 0.75,
+      "color": "#fafafa",
+      "fixed": true
+    },
+    {
+      "id": "fx-pia-0.33-4.55",
+      "type": "pia",
+      "rot": 0,
+      "x": 0.738,
+      "y": 4.811,
+      "w": 0.824,
+      "d": 0.522,
+      "h": 0.85,
+      "color": "#efece6",
+      "fixed": true
+    },
+    {
+      "id": "fx-vaso-1.26-4.63",
+      "type": "vaso",
+      "rot": 0,
+      "x": 1.48,
+      "y": 4.851,
+      "w": 0.44,
+      "d": 0.442,
+      "h": 0.75,
+      "color": "#fafafa",
+      "fixed": true
+    },
+    {
+      "id": "fx-box-1.85-3.90",
+      "type": "box",
+      "rot": 0,
+      "x": 2.254,
+      "y": 4.377,
+      "w": 0.815,
+      "d": 0.951,
+      "h": 2,
+      "color": "#bfe3ee",
+      "fixed": true
+    }
+  ]
+}

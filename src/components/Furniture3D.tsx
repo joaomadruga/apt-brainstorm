@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import * as THREE from "three";
-import type { Item } from "@/data/catalog";
+import { catalogByType, type Item, type Part } from "@/data/catalog";
 
 // Cada móvel é montado com primitivas simples no referencial local:
 // largura em x, profundidade em z, "frente" voltada para +z, base em y=0.
@@ -33,9 +33,42 @@ const shade = (hex: string, k: number) => {
   return `#${c.getHexString()}`;
 };
 
+const DEG = Math.PI / 180;
+
+/** Móvel definido por dados (/furniture/*.json): peças em frações da caixa do móvel */
+function PartsMesh({ item, parts }: { item: Item; parts: Part[] }) {
+  const { w, d, h, color } = item;
+  const dark = shade(color, 0.72);
+  const light = shade(color, 1.25);
+  return (
+    <group>
+      {parts.map((p, i) => {
+        const col = !p.color || p.color === "base" ? color : p.color === "dark" ? dark : p.color === "light" ? light : p.color;
+        const sx = p.sx * w, sy = p.sy * h, sz = p.sz * d;
+        const rot: [number, number, number] = [(p.rx ?? 0) * DEG, (p.ry ?? 0) * DEG, (p.rz ?? 0) * DEG];
+        const o = p.opacity ?? 1;
+        return (
+          <mesh key={i} position={[p.x * w, p.y * h, p.z * d]} rotation={rot} scale={p.shape === "box" ? 1 : [sx, sy, sz]} castShadow receiveShadow>
+            {p.shape === "box" ? (
+              <boxGeometry args={[sx, sy, sz]} />
+            ) : p.shape === "cylinder" ? (
+              <cylinderGeometry args={[0.5 * (p.taper ?? 1), 0.5, 1, 24]} />
+            ) : (
+              <sphereGeometry args={[0.5, 20, 14]} />
+            )}
+            <meshStandardMaterial color={col} roughness={p.roughness ?? 0.7} metalness={p.metalness ?? 0} transparent={o < 1} opacity={o} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
 export function FurnitureMesh({ item }: { item: Item }) {
   const { w, d, h, color: c, type } = item;
   const dark = useMemo(() => shade(c, 0.75), [c]);
+  const parts = catalogByType[type]?.parts;
+  if (parts) return <PartsMesh item={item} parts={parts} />;
   const legs = (lh: number, inset = 0.04, col = "#3a3a3a", t = 0.04) =>
     [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz], i) => (
       <B key={i} p={[sx * (w / 2 - inset), lh / 2, sz * (d / 2 - inset)]} s={[t, lh, t]} c={col} />

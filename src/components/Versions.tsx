@@ -1,13 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { bounds, rooms, walls } from "@/data/apartment";
+import { bounds, rooms as baseRooms } from "@/data/apartment";
+import { slugify, snapshotToFile, type VersionFile } from "@/lib/files";
 import { wallPieces } from "@/lib/geometry";
 import { floorFinishes } from "@/lib/materials";
+import { resolvePlan } from "@/lib/plan";
 import { originalSnapshot, useStore, type Snapshot, type Version } from "@/lib/store";
+import { usePlanColors } from "@/lib/theme";
 
 /** Mini planta estática (sempre fiel ao conteúdo da versão) */
 export function MiniPlan({ data }: { data: Snapshot }) {
+  const C = usePlanColors();
+  const { rooms, walls } = resolvePlan(data);
   const pad = 0.3;
   const vb = `${bounds.minX - pad} ${-bounds.maxY - pad} ${bounds.maxX - bounds.minX + 2 * pad} ${bounds.maxY - bounds.minY + 2 * pad}`;
   return (
@@ -22,7 +27,7 @@ export function MiniPlan({ data }: { data: Snapshot }) {
           wallPieces(w, 2.6)
             .filter((p) => p.z0 === 0 && p.z1 > 1.5)
             .map((p, i) => (
-              <rect key={`${w.id}${i}`} x={p.x0} y={-p.y1} width={p.x1 - p.x0} height={p.y1 - p.y0} fill={w.kind === "parapet" ? "#9ec5d6" : "#2b2b2b"} />
+              <rect key={`${w.id}${i}`} x={p.x0} y={-p.y1} width={p.x1 - p.x0} height={p.y1 - p.y0} fill={w.kind === "parapet" ? "#9ec5d6" : C.wall} />
             ))
         ),
       )}
@@ -36,7 +41,7 @@ export function MiniPlan({ data }: { data: Snapshot }) {
           transform={`translate(${it.x} ${-it.y}) rotate(${-it.rot})`}
           fill={it.color}
           fillOpacity={0.7}
-          stroke="#3a3a3a"
+          stroke={C.itemStroke}
           strokeWidth={0.015}
         />
       ))}
@@ -52,19 +57,58 @@ function diffSummary(v: Version) {
   const origIds = new Set(o.items.map((i) => i.id));
   const added = v.data.items.filter((i) => !origIds.has(i.id)).length;
   const removedFixtures = o.items.filter((i) => !v.data.items.some((x) => x.id === i.id)).length;
-  const floorsChanged = rooms.filter((r) => v.data.floors[r.id] !== o.floors[r.id]).length;
+  const floorsChanged = baseRooms.filter((r) => v.data.floors[r.id] !== o.floors[r.id]).length;
+  const geo = v.data.extraWalls.length + v.data.rooms.length + v.data.removedRooms.length;
   const parts = [
     v.data.removedWalls.length ? `${v.data.removedWalls.length} parede(s) removida(s)` : "",
     added ? `${added} móvel(is)` : "",
     removedFixtures ? `${removedFixtures} peça(s) do projeto tirada(s)` : "",
     floorsChanged ? `${floorsChanged} piso(s) trocado(s)` : "",
+    geo ? `${geo} edição(ões) de paredes/cômodos` : "",
     v.data.wallColor !== o.wallColor || Object.keys(v.data.wallColors).length ? "cores de parede" : "",
   ].filter(Boolean);
   return parts.length ? parts.join(" · ") : "Igual ao projeto original";
 }
 
-function VersionCard({ v }: { v: Version }) {
+function toFile(v: Version, taken: Set<string>): VersionFile {
+  let id = v.repo?.id ?? slugify(v.name);
+  if (!v.repo) {
+    const base = id;
+    let k = 2;
+    while (taken.has(id)) id = `${base}-${k++}`;
+  }
+  return snapshotToFile(id, v.name, v.data, v.description ? { description: v.description } : {});
+}
+
+function download(file: VersionFile) {
+  const blob = new Blob([JSON.stringify(file, null, 2) + "\n"], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${file.id}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function StatusBadge({ v }: { v: Version }) {
+  if (v.repo && v.repoChanged) return <span className="vstatus warn">repo atualizado · você tem alterações locais</span>;
+  if (v.repo && v.dirty) return <span className="vstatus warn">alterada neste navegador · não salva no repo</span>;
+  if (v.repo) return <span className="vstatus repo">repo · versions/{v.repo.id}.json</span>;
+  return <span className="vstatus local">só neste navegador · não está no repo</span>;
+}
+
+function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean }) {
   const s = useStore();
+  const [msg, setMsg] = useState("");
+  const taken = new Set(s.versions.flatMap((x) => (x.repo ? [x.repo.id] : [])));
+  const saveToRepo = async () => {
+    const file = toFile(v, taken);
+    setMsg("Salvando…");
+    const res = await fetch("/api/versions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(file) });
+    const body = await res.json();
+    if (!res.ok) return setMsg(`Erro: ${body.error}${body.errors ? ` — ${body.errors.join("; ")}` : ""}`);
+    s.markSavedToRepo(v.id, file);
+    setMsg(`✓ Gravado em ${body.path}. Falta commitar e dar push.`);
+  };
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(v.name);
   const [showPlan, setShowPlan] = useState(!v.thumb);
@@ -108,6 +152,8 @@ function VersionCard({ v }: { v: Version }) {
         ) : (
           <strong onDoubleClick={() => setEditing(true)} title="Duplo clique para renomear">{v.name}</strong>
         )}
+        <StatusBadge v={v} />
+        {v.description && <span className="small">{v.description}</span>}
         <span className="small muted">{diffSummary(v)}</span>
         <span className="small muted">Editada {fmt(v.updatedAt)} · criada {fmt(v.createdAt)}</span>
       </div>
@@ -117,16 +163,50 @@ function VersionCard({ v }: { v: Version }) {
         <button onClick={() => s.duplicateVersion(v.id)}>Duplicar</button>
         <button
           className="danger"
-          onClick={() => confirm(`Excluir a versão "${v.name}"? Não dá pra desfazer.`) && s.deleteVersion(v.id)}
+          onClick={() =>
+            confirm(
+              v.repo
+                ? `Esconder "${v.name}" neste navegador? O arquivo continua no repositório.`
+                : `Excluir a versão "${v.name}"? Ela só existe neste navegador — não dá pra desfazer.`,
+            ) && s.deleteVersion(v.id)
+          }
         >
-          Excluir
+          {v.repo ? "Esconder" : "Excluir"}
         </button>
       </div>
+      <div className="row">
+        <button onClick={() => download(toFile(v, taken))} title="Baixa o arquivo para colocar em /versions e commitar">
+          ⬇ Exportar JSON
+        </button>
+        {canSaveToRepo && (!v.repo || v.dirty) && (
+          <button onClick={saveToRepo} title="Grava /versions/<id>.json no disco (só rodando local)">💾 Salvar em versions/</button>
+        )}
+        {v.repo && (v.dirty || v.repoChanged) && (
+          <button onClick={() => confirm("Descartar as alterações deste navegador e voltar para a versão do repositório?") && s.revertToRepo(v.id)}>
+            ↺ Descartar alterações locais
+          </button>
+        )}
+      </div>
+      {msg && <span className="small muted">{msg}</span>}
     </div>
   );
 }
 
-export default function VersionsScreen() {
+function ThemeSwitch() {
+  const theme = useStore((s) => s.theme);
+  const setTheme = useStore((s) => s.setTheme);
+  return (
+    <div className="seg theme">
+      {(["auto", "light", "dark"] as const).map((t) => (
+        <button key={t} className={theme === t ? "on" : ""} onClick={() => setTheme(t)}>
+          {t === "auto" ? "◐ Auto" : t === "light" ? "☀︎ Claro" : "☾ Escuro"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boolean }) {
   const versions = useStore((s) => s.versions);
   const createVersion = useStore((s) => s.createVersion);
   const openVersion = useStore((s) => s.openVersion);
@@ -153,9 +233,21 @@ export default function VersionsScreen() {
       <header className="vheader">
         <div>
           <h1>Apto 1707 · Versões</h1>
-          <div className="muted small">Cada versão guarda paredes, móveis, pisos e cores. Tudo salva sozinho enquanto você edita.</div>
+          <div className="muted small">Cada versão guarda paredes, cômodos, móveis, pisos e cores.</div>
+        </div>
+        <div className="theme-inline">
+          <ThemeSwitch />
         </div>
       </header>
+
+      <div className="localnote">
+        <strong>⚠️ Onde as coisas ficam salvas:</strong> as versões marcadas <em>repo</em> vêm da pasta <code>versions/</code> do
+        repositório (é o que aparece para todo mundo). <strong>Qualquer alteração feita aqui no app — criar, editar, mover,
+        renomear — fica só neste navegador</strong>: não vai para o repositório, nem para a Vercel, nem para outro computador, e
+        some se você limpar os dados do site. Para guardar de verdade: <strong>⬇ Exportar JSON</strong> e commitar o arquivo
+        em <code>versions/</code> (ou peça para um agent fazer isso).
+        {canSaveToRepo && <> Rodando local (<code>npm run dev</code>), dá para usar <strong>💾 Salvar em versions/</strong> e depois commitar.</>}
+      </div>
 
       <section className="vnew">
         <strong>Nova versão</strong>
@@ -199,7 +291,7 @@ export default function VersionsScreen() {
       ) : (
         <div className="vgrid">
           {sorted.map((v) => (
-            <VersionCard key={v.id} v={v} />
+            <VersionCard key={v.id} v={v} canSaveToRepo={canSaveToRepo} />
           ))}
         </div>
       )}

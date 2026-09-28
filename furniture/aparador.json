@@ -1,0 +1,19 @@
+{
+  "type": "aparador",
+  "name": "Aparador",
+  "group": "Sala",
+  "w": 1.4,
+  "d": 0.4,
+  "h": 0.8,
+  "color": "#8b6a4f",
+  "parts": [
+    { "shape": "box", "x": 0, "y": 0.955, "z": 0, "sx": 1, "sy": 0.05, "sz": 1, "color": "base", "roughness": 0.5 },
+    { "shape": "box", "x": 0, "y": 0.6, "z": 0, "sx": 0.96, "sy": 0.6, "sz": 0.92, "color": "dark" },
+    { "shape": "box", "x": -0.25, "y": 0.6, "z": 0.465, "sx": 0.47, "sy": 0.56, "sz": 0.02, "color": "light" },
+    { "shape": "box", "x": 0.25, "y": 0.6, "z": 0.465, "sx": 0.47, "sy": 0.56, "sz": 0.02, "color": "light" },
+    { "shape": "cylinder", "x": -0.44, "y": 0.15, "z": -0.38, "sx": 0.03, "sy": 0.3, "sz": 0.1, "color": "#2b2b2b" },
+    { "shape": "cylinder", "x": 0.44, "y": 0.15, "z": -0.38, "sx": 0.03, "sy": 0.3, "sz": 0.1, "color": "#2b2b2b" },
+    { "shape": "cylinder", "x": -0.44, "y": 0.15, "z": 0.38, "sx": 0.03, "sy": 0.3, "sz": 0.1, "color": "#2b2b2b" },
+    { "shape": "cylinder", "x": 0.44, "y": 0.15, "z": 0.38, "sx": 0.03, "sy": 0.3, "sz": 0.1, "color": "#2b2b2b" }
+  ]
+}

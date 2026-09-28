@@ -2,19 +2,23 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { rooms, walls } from "@/data/apartment";
-import { catalogByType } from "@/data/catalog";
+import { entryName, type CatalogEntry } from "@/data/catalog";
 import { capture, type CaptureResult } from "@/lib/capture";
 import { floorFinishes, wallPalette } from "@/lib/materials";
-import { useStore } from "@/lib/store";
+import { registerRepo, useStore } from "@/lib/store";
+import type { VersionFile } from "@/lib/files";
+import { resolvePlan, roomAt as roomIn } from "@/lib/plan";
+import { useResolvedTheme } from "@/lib/theme";
 import Plan2D from "./Plan2D";
-import Sidebar, { roomAt } from "./Sidebar";
+import Sidebar from "./Sidebar";
 import VersionsScreen from "./Versions";
 
 const Scene3D = dynamic(() => import("./Scene3D"), { ssr: false, loading: () => <div className="loading">Carregando 3D…</div> });
 
 function buildPrompt(r: CaptureResult) {
   const st = useStore.getState();
+  const { rooms, walls } = resolvePlan(st);
+  const roomAt = (x: number, y: number) => roomIn(rooms, x, y);
   const cam = r.camera;
   const room = roomAt(cam.x, cam.y);
   const deg = (Math.atan2(cam.dir.y, cam.dir.x) * 180) / Math.PI;
@@ -22,9 +26,9 @@ function buildPrompt(r: CaptureResult) {
   const pitch = (Math.asin(Math.max(-1, Math.min(1, cam.dir.z))) * 180) / Math.PI;
   const wallName = wallPalette.find((p) => p.color === st.wallColor)?.name ?? st.wallColor;
   const furniture = st.items
-    .map((i) => `${catalogByType[i.type].name} (${i.w.toFixed(2)}×${i.d.toFixed(2)} m, ${roomAt(i.x, i.y)?.name ?? "—"})`)
+    .map((i) => `${entryName(i.type)} (${i.w.toFixed(2)}×${i.d.toFixed(2)} m, ${roomAt(i.x, i.y)?.name ?? "—"})`)
     .join("; ");
-  const floorsTxt = rooms.map((rm) => `${rm.name}: ${floorFinishes[st.floors[rm.id]].prompt}`).join("; ");
+  const floorsTxt = rooms.map((rm) => `${rm.name}: ${floorFinishes[st.floors[rm.id] ?? rm.floor].prompt}`).join("; ");
   const removed = st.removedWalls.map((id) => walls.find((w) => w.id === id)?.name).filter(Boolean);
   const hh = Math.floor(st.hour), mm = Math.round((st.hour % 1) * 60);
   const inside = room && cam.z < 2.6;
@@ -93,7 +97,18 @@ function CaptureModal({ shot, onClose }: { shot: CaptureResult; onClose: () => v
   );
 }
 
-export default function App() {
+export default function App({
+  repoVersions,
+  repoFurniture,
+  canSaveToRepo,
+}: {
+  repoVersions: VersionFile[];
+  repoFurniture: CatalogEntry[];
+  canSaveToRepo: boolean;
+}) {
+  // móveis de /furniture e versões de /versions (lidos no build)
+  registerRepo(repoVersions, repoFurniture);
+  useResolvedTheme();
   const view = useStore((s) => s.view);
   const screen = useStore((s) => s.screen);
   const activeId = useStore((s) => s.activeId);
@@ -141,15 +156,16 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [doCapture]);
 
-  // primeira vez: cria a versão com o projeto original
+  // junta as versões do repositório com as deste navegador
   useEffect(() => {
     if (!hydrated) return;
     const s = useStore.getState();
-    if (s.versions.length === 0) s.createVersion("Projeto original", "original");
-  }, [hydrated]);
+    s.mergeRepo(repoVersions);
+    if (useStore.getState().versions.length === 0) s.createVersion("Projeto original", "original");
+  }, [hydrated, repoVersions]);
 
   if (!hydrated) return <div className="loading">Carregando…</div>;
-  if (screen === "versions" || !activeId) return <VersionsScreen />;
+  if (screen === "versions" || !activeId) return <VersionsScreen canSaveToRepo={canSaveToRepo} />;
 
   return (
     <div className="app">

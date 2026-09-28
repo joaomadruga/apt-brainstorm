@@ -2,29 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { capture } from "@/lib/capture";
-import { polyArea, rooms, walls, type FloorFinish } from "@/data/apartment";
+import { polyArea, type FloorFinish } from "@/data/apartment";
 import { catalog, catalogByType, type FurnitureType } from "@/data/catalog";
 import { floorFinishes, wallPalette } from "@/lib/materials";
-import { useStore } from "@/lib/store";
+import { usePlan, useStore, type Theme } from "@/lib/store";
+import { roomAt } from "@/lib/plan";
 
 const kindLabel = { ext: "Fachada / divisa", int: "Interna", pillar: "Pilar (estrutural)", parapet: "Guarda-corpo" } as const;
 
-function pointInPoly(x: number, y: number, poly: [number, number][]) {
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, yi] = poly[i];
-    const [xj, yj] = poly[j];
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
-export const roomAt = (x: number, y: number) => rooms.find((r) => pointInPoly(x, y, r.poly));
 
 function Inspector() {
   const selection = useStore((s) => s.selection);
   const items = useStore((s) => s.items);
   const removed = useStore((s) => s.removedWalls);
   const floors = useStore((s) => s.floors);
+  const { walls, rooms } = usePlan();
   const s = useStore();
 
   if (!selection)
@@ -47,10 +39,10 @@ function Inspector() {
     );
     return (
       <div className="stack">
-        <strong>{catalogByType[it.type].name}{it.fixed ? " · do projeto" : ""}</strong>
+        <strong>{catalogByType[it.type]?.name ?? it.type}{it.fixed ? " · do projeto" : ""}</strong>
         <div className="row3">{num("w", "Larg.")}{num("d", "Prof.")}{num("h", "Alt.")}</div>
         <div className="muted small">
-          Posição: x {it.x.toFixed(2)} · y {it.y.toFixed(2)} · {it.rot}° · {roomAt(it.x, it.y)?.name ?? "fora"}
+          Posição: x {it.x.toFixed(2)} · y {it.y.toFixed(2)} · {it.rot}° · {roomAt(rooms, it.x, it.y)?.name ?? "fora"}
         </div>
         <label className="field">
           <span>Cor</span>
@@ -71,7 +63,8 @@ function Inspector() {
   }
 
   if (selection.kind === "wall") {
-    const w = walls.find((x) => x.id === selection.id)!;
+    const w = walls.find((x) => x.id === selection.id);
+    if (!w) return null;
     const isRemoved = removed.includes(w.id);
     const len = Math.max(w.x1 - w.x0, w.y1 - w.y0);
     const thick = Math.min(w.x1 - w.x0, w.y1 - w.y0);
@@ -99,7 +92,8 @@ function Inspector() {
     );
   }
 
-  const r = rooms.find((x) => x.id === selection.id)!;
+  const r = rooms.find((x) => x.id === selection.id);
+  if (!r) return null;
   return (
     <div className="stack">
       <strong>{r.name}</strong>
@@ -162,6 +156,8 @@ async function thumbnail(): Promise<string | undefined> {
 
 export default function Sidebar({ onCapture }: { onCapture: () => void }) {
   const s = useStore();
+  const { rooms } = usePlan();
+  const version = s.versions.find((v) => v.id === s.activeId);
   const goVersions = async () => {
     const id = s.activeId;
     const t = await thumbnail();
@@ -177,11 +173,11 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
   const add = (t: FurnitureType) => {
     // coloca no centro do cômodo selecionado (ou na sala)
     const sel = s.selection;
-    let room = rooms.find((r) => r.id === "sala")!;
+    let room = rooms.find((r) => r.id === "sala") ?? rooms[0];
     if (sel?.kind === "room") room = rooms.find((r) => r.id === sel.id) ?? room;
     if (sel?.kind === "item") {
       const it = s.items.find((i) => i.id === sel.id);
-      if (it) room = roomAt(it.x, it.y) ?? room;
+      if (it) room = roomAt(rooms, it.x, it.y) ?? room;
     }
     s.addItem(t, room.label[0], room.label[1] - 0.4);
   };
@@ -191,7 +187,12 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
       <header className="stack tight">
         <button className="ghost back" onClick={goVersions}>← Versões</button>
         <VersionName />
-        <div className="muted small">Apto 1707 · Casa Forte · 52,71 m² · salva automaticamente</div>
+        <div className="muted small">Apto 1707 · Casa Forte · 52,71 m²</div>
+        <div className="localnote small">
+          <strong>⚠️ Só neste navegador.</strong> O que você mexe aqui fica guardado apenas neste navegador
+          {version?.repo ? " (por cima da versão do repositório)" : ""} — <strong>não é salvo no repositório nem em
+          nenhum servidor</strong>. Para guardar de verdade, use “Exportar JSON” na tela de versões.
+        </div>
         <button
           onClick={() => {
             const cur = s.versions.find((v) => v.id === s.activeId);
@@ -207,6 +208,13 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
       </header>
 
       <section>
+        <div className="seg theme">
+          {(["auto", "light", "dark"] as Theme[]).map((t) => (
+            <button key={t} className={s.theme === t ? "on" : ""} onClick={() => s.setTheme(t)} title="Tema">
+              {t === "auto" ? "◐ Auto" : t === "light" ? "☀︎ Claro" : "☾ Escuro"}
+            </button>
+          ))}
+        </div>
         <div className="seg">
           {(["3d", "split", "2d"] as const).map((v) => (
             <button key={v} className={s.view === v ? "on" : ""} onClick={() => s.setView(v)}>

@@ -1,17 +1,18 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { bounds, center, polyArea, rooms, walls, wallAxis, type Opening, type Wall } from "@/data/apartment";
+import { bounds, center, polyArea, wallAxis, type Opening, type Wall } from "@/data/apartment";
 import { catalogByType, type Item } from "@/data/catalog";
 import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
 import { floorFinishes } from "@/lib/materials";
-import { useStore } from "@/lib/store";
+import { usePlan, useStore } from "@/lib/store";
+import { usePlanColors, type PlanColors } from "@/lib/theme";
 
 // SVG em metros; y da planta invertido (y_svg = -y)
 const PAD = 0.8;
 const VB0 = { x: bounds.minX - PAD, y: -bounds.maxY - PAD, w: bounds.maxX - bounds.minX + 2 * PAD, h: bounds.maxY - bounds.minY + 2 * PAD };
 
-function DoorSymbol({ w, o }: { w: Wall; o: Opening }) {
+function DoorSymbol({ w, o, C }: { w: Wall; o: Opening; C: PlanColors }) {
   const r = openingRect(w, o);
   const ax = wallAxis(w);
   const leaf = o.a1 - o.a0 - 0.06; // desconta os batentes
@@ -23,7 +24,7 @@ function DoorSymbol({ w, o }: { w: Wall; o: Opening }) {
     const ey = fy + sw * leaf;
     const sweep = (o.hinge === "end") === sw > 0 ? 1 : 0;
     return (
-      <g stroke="#b57a1c" fill="none" strokeWidth={0.015}>
+      <g stroke={C.door} fill="none" strokeWidth={0.015}>
         <line x1={hx} y1={-fy} x2={hx} y2={-ey} strokeWidth={0.03} />
         <path d={`M ${hx} ${-ey} A ${leaf} ${leaf} 0 0 ${sweep} ${tipX} ${-fy}`} strokeDasharray="0.05 0.04" />
       </g>
@@ -35,7 +36,7 @@ function DoorSymbol({ w, o }: { w: Wall; o: Opening }) {
   const ex = fx + sw * leaf;
   const sweep = (o.hinge === "end") === sw > 0 ? 0 : 1;
   return (
-    <g stroke="#b57a1c" fill="none" strokeWidth={0.015}>
+    <g stroke={C.door} fill="none" strokeWidth={0.015}>
       <line x1={fx} y1={-hy} x2={ex} y2={-hy} strokeWidth={0.03} />
       <path d={`M ${ex} ${-hy} A ${leaf} ${leaf} 0 0 ${sweep} ${fx} ${-tipY}`} strokeDasharray="0.05 0.04" />
     </g>
@@ -50,9 +51,9 @@ const ESQ: Record<string, { w: number; h: number; sill: number; type: "correr" |
   EA27: { w: 1.0, h: 1.1, sill: 1.1, type: "correr" },
 };
 const br = (n: number) => n.toFixed(2).replace(".", ",");
-const GLASS = "#1f7fb0";
 
-function WindowSymbol({ w, o }: { w: Wall; o: Opening }) {
+function WindowSymbol({ w, o, C }: { w: Wall; o: Opening; C: PlanColors }) {
+  const GLASS = C.glass;
   const r = openingRect(w, o);
   const isX = wallAxis(w) === "x";
   // eixo "a" = ao longo da parede, eixo "t" = espessura
@@ -73,13 +74,13 @@ function WindowSymbol({ w, o }: { w: Wall; o: Opening }) {
   const els: React.ReactNode[] = [];
   // vão limpo
   const [rx, ry] = isX ? [r.x0, -r.y1] : [r.x0, -r.y1];
-  els.push(<rect key="bg" x={rx} y={ry} width={r.x1 - r.x0} height={r.y1 - r.y0} fill="#ffffff" />);
+  els.push(<rect key="bg" x={rx} y={ry} width={r.x1 - r.x0} height={r.y1 - r.y0} fill={C.bg} />);
   // peitoril / soleira: linhas finas nas duas faces
   if (o.sill > 0) {
-    els.push(L(a0, t0, a1, t0, "#2b2b2b", 0.012, "f0"), L(a0, t1, a1, t1, "#2b2b2b", 0.012, "f1"));
+    els.push(L(a0, t0, a1, t0, C.wall, 0.012, "f0"), L(a0, t1, a1, t1, C.wall, 0.012, "f1"));
   }
   // batentes (ombreiras)
-  els.push(L(a0, t0, a0, t1, "#2b2b2b", 0.025, "j0"), L(a1, t0, a1, t1, "#2b2b2b", 0.025, "j1"));
+  els.push(L(a0, t0, a0, t1, C.wall, 0.025, "j0"), L(a1, t0, a1, t1, C.wall, 0.025, "j1"));
   els.push(L(a0 + fr, t0 + T * 0.2, a0 + fr, t1 - T * 0.2, GLASS, 0.015, "k0"), L(a1 - fr, t0 + T * 0.2, a1 - fr, t1 - T * 0.2, GLASS, 0.015, "k1"));
   const in0 = a0 + fr, in1 = a1 - fr, span = in1 - in0;
   if ((spec?.type ?? "correr") === "correr") {
@@ -107,14 +108,14 @@ function WindowSymbol({ w, o }: { w: Wall; o: Opening }) {
     <g key="lab" transform={`translate(${lx} ${ly}) rotate(${rot})`} style={{ pointerEvents: "none" }}>
       <text fontSize={0.13} textAnchor="middle" fill={GLASS} fontWeight={700} y={labelSide > 0 === isX ? 0 : 0.08}>
         {o.label}
-        <tspan fontSize={0.095} fontWeight={400} fill="#4d7d96">{sizes ? `  ${sizes}` : ""}</tspan>
+        <tspan fontSize={0.095} fontWeight={400} fill={C.glassSub}>{sizes ? `  ${sizes}` : ""}</tspan>
       </text>
     </g>,
   );
   return <g>{els}</g>;
 }
 
-function ItemShape({ item, onDown }: { item: Item; onDown: (e: React.PointerEvent, it: Item) => void }) {
+function ItemShape({ item, onDown, C }: { item: Item; onDown: (e: React.PointerEvent, it: Item) => void; C: PlanColors }) {
   const selection = useStore((s) => s.selection);
   const sel = selection?.kind === "item" && selection.id === item.id;
   const name = catalogByType[item.type]?.name ?? item.type;
@@ -129,13 +130,13 @@ function ItemShape({ item, onDown }: { item: Item; onDown: (e: React.PointerEven
         rx={item.type === "tapete" ? 0 : 0.03}
         fill={item.color}
         fillOpacity={item.type === "tapete" ? 0.35 : 0.55}
-        stroke={sel ? "#ff7a1a" : item.fixed ? "#7d8a96" : "#3a3a3a"}
+        stroke={sel ? "#ff7a1a" : item.fixed ? C.itemFixedStroke : C.itemStroke}
         strokeWidth={sel ? 0.035 : 0.015}
       />
       {/* marca da "frente" */}
       <line x1={-item.w / 2 + 0.04} x2={item.w / 2 - 0.04} y1={item.d / 2 - 0.03} y2={item.d / 2 - 0.03} stroke="#0003" strokeWidth={0.02} />
       {!small && (
-        <text fontSize={0.11} textAnchor="middle" dominantBaseline="middle" fill="#222" style={{ pointerEvents: "none" }} transform={`rotate(${item.rot})`}>
+        <text fontSize={0.11} textAnchor="middle" dominantBaseline="middle" fill={C.itemText} style={{ pointerEvents: "none" }} transform={`rotate(${item.rot})`}>
           {name}
         </text>
       )}
@@ -153,6 +154,8 @@ export default function Plan2D() {
   const commit = useStore((s) => s.commit);
   const snap = useStore((s) => s.snap);
   const toggleWall = useStore((s) => s.toggleWall);
+  const { walls, rooms } = usePlan();
+  const C = usePlanColors();
   const svgRef = useRef<SVGSVGElement>(null);
   const [vb, setVb] = useState(VB0);
   const drag = useRef<
@@ -215,10 +218,10 @@ export default function Plan2D() {
     setVb((v) => ({ x: px - (px - v.x) * f, y: py - (py - v.y) * f, w: v.w * f, h: v.h * f }));
   };
 
-  const total = useMemo(() => rooms.reduce((a, r) => a + polyArea(r.poly), 0), []);
+  const total = useMemo(() => rooms.reduce((a, r) => a + polyArea(r.poly), 0), [rooms]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", background: "#f7f5f1" }}>
+    <div style={{ position: "relative", width: "100%", height: "100%", background: C.bg }}>
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
@@ -230,7 +233,7 @@ export default function Plan2D() {
       >
         <defs>
           <pattern id="grid" width={0.5} height={0.5} patternUnits="userSpaceOnUse">
-            <path d="M 0.5 0 L 0 0 0 0.5" fill="none" stroke="#e3ded6" strokeWidth={0.01} />
+            <path d="M 0.5 0 L 0 0 0 0.5" fill="none" stroke={C.grid} strokeWidth={0.01} />
           </pattern>
           <pattern id="removed" width={0.08} height={0.08} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <line x1={0} y1={0} x2={0} y2={0.08} stroke="#e07a5f" strokeWidth={0.015} />
@@ -245,8 +248,8 @@ export default function Plan2D() {
             <polygon
               key={r.id}
               points={r.poly.map(([x, y]) => `${x},${-y}`).join(" ")}
-              fill={floorFinishes[floors[r.id]].color}
-              fillOpacity={sel ? 0.75 : 0.35}
+              fill={floorFinishes[floors[r.id] ?? r.floor].color}
+              fillOpacity={sel ? 0.75 : C.floorOpacity}
               stroke={sel ? "#ff7a1a" : "none"}
               strokeWidth={0.03}
               onPointerDown={(e) => {
@@ -260,17 +263,17 @@ export default function Plan2D() {
         {walls.flatMap((w) =>
           removed.includes(w.id) ? [] : (w.openings ?? []).filter((o) => o.sill === 0).map((o, i) => {
             const r = openingRect(w, o);
-            return <rect key={`${w.id}-t${i}`} x={r.x0} y={-r.y1} width={r.x1 - r.x0} height={r.y1 - r.y0} fill="#e9e1d4" />;
+            return <rect key={`${w.id}-t${i}`} x={r.x0} y={-r.y1} width={r.x1 - r.x0} height={r.y1 - r.y0} fill={C.threshold} />;
           }),
         )}
 
         {/* rótulos dos cômodos */}
         {rooms.map((r) => (
           <g key={`l-${r.id}`} style={{ pointerEvents: "none" }}>
-            <text x={r.label[0]} y={-r.label[1]} fontSize={0.2} textAnchor="middle" fill="#3b3b3b" fontWeight={600}>
+            <text x={r.label[0]} y={-r.label[1]} fontSize={0.2} textAnchor="middle" fill={C.text} fontWeight={600}>
               {r.name}
             </text>
-            <text x={r.label[0]} y={-r.label[1] + 0.22} fontSize={0.13} textAnchor="middle" fill="#6b6b6b">
+            <text x={r.label[0]} y={-r.label[1] + 0.22} fontSize={0.13} textAnchor="middle" fill={C.subtext}>
               {polyArea(r.poly).toFixed(2)} m²
             </text>
           </g>
@@ -289,7 +292,7 @@ export default function Plan2D() {
               <rect key={w.id} x={w.x0} y={-w.y1} width={w.x1 - w.x0} height={w.y1 - w.y0} fill="url(#removed)" stroke="#e07a5f" strokeWidth={0.012} strokeDasharray="0.05 0.04" onPointerDown={onDown} onDoubleClick={() => toggleWall(w.id)} />
             );
           const pieces = wallPieces(w, 2.6).filter((p) => p.z0 === 0 && p.z1 > 1.5);
-          const fill = sel ? "#ff8a3d" : w.kind === "pillar" ? "#6b6b6b" : w.kind === "parapet" ? "#9ec5d6" : "#2b2b2b";
+          const fill = sel ? "#ff8a3d" : w.kind === "pillar" ? C.pillar : w.kind === "parapet" ? "#9ec5d6" : C.wall;
           return (
             <g key={w.id} onPointerDown={onDown} style={{ cursor: "pointer" }}>
               {w.kind === "parapet" ? (
@@ -298,7 +301,7 @@ export default function Plan2D() {
                 pieces.map((p, i) => <rect key={i} x={p.x0} y={-p.y1} width={p.x1 - p.x0} height={p.y1 - p.y0} fill={fill} />)
               )}
               {(w.openings ?? []).map((o, i) =>
-                o.kind === "door" ? <DoorSymbol key={i} w={w} o={o} /> : <WindowSymbol key={i} w={w} o={o} />,
+                o.kind === "door" ? <DoorSymbol key={i} w={w} o={o} C={C} /> : <WindowSymbol key={i} w={w} o={o} C={C} />,
               )}
             </g>
           );
@@ -306,23 +309,23 @@ export default function Plan2D() {
 
         {/* móveis */}
         {items.map((it) => (
-          <ItemShape key={it.id} item={it} onDown={onItemDown} />
+          <ItemShape key={it.id} item={it} onDown={onItemDown} C={C} />
         ))}
 
         {/* norte + escala */}
         <g transform={`translate(${bounds.maxX + 0.35} ${-bounds.maxY + 0.2})`} style={{ pointerEvents: "none" }}>
-          <path d="M 0 -0.25 L 0.1 0.05 L 0 0 L -0.1 0.05 Z" fill="#555" />
-          <text y={0.25} fontSize={0.14} textAnchor="middle" fill="#555">N</text>
+          <path d="M 0 -0.25 L 0.1 0.05 L 0 0 L -0.1 0.05 Z" fill={C.subtext} />
+          <text y={0.25} fontSize={0.14} textAnchor="middle" fill={C.subtext}>N</text>
         </g>
         <g transform={`translate(${bounds.minX} ${-bounds.minY + 0.45})`} style={{ pointerEvents: "none" }}>
-          <rect width={1} height={0.04} fill="#555" />
+          <rect width={1} height={0.04} fill={C.subtext} />
           <rect x={1} width={1} height={0.04} fill="#aaa" />
-          <text x={0} y={0.2} fontSize={0.12} fill="#555">0</text>
-          <text x={1} y={0.2} fontSize={0.12} fill="#555" textAnchor="middle">1 m</text>
-          <text x={2} y={0.2} fontSize={0.12} fill="#555" textAnchor="middle">2 m</text>
+          <text x={0} y={0.2} fontSize={0.12} fill={C.subtext}>0</text>
+          <text x={1} y={0.2} fontSize={0.12} fill={C.subtext} textAnchor="middle">1 m</text>
+          <text x={2} y={0.2} fontSize={0.12} fill={C.subtext} textAnchor="middle">2 m</text>
         </g>
       </svg>
-      <div style={{ position: "absolute", left: 12, top: 10, fontSize: 12, color: "#6b6b6b", pointerEvents: "none" }}>
+      <div style={{ position: "absolute", left: 12, top: 10, fontSize: 12, color: C.subtext, pointerEvents: "none" }}>
         Área útil dos cômodos: {total.toFixed(2)} m² · planta oficial: 52,71 m² (inclui paredes)
       </div>
       <button

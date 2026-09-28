@@ -1,0 +1,14 @@
+{
+  "type": "mesa-lateral",
+  "name": "Mesa lateral redonda",
+  "group": "Decoração",
+  "w": 0.45,
+  "d": 0.45,
+  "h": 0.55,
+  "color": "#c9a57a",
+  "parts": [
+    { "shape": "cylinder", "x": 0, "y": 0.97, "z": 0, "sx": 1, "sy": 0.06, "sz": 1, "color": "base", "roughness": 0.4 },
+    { "shape": "cylinder", "x": 0, "y": 0.5, "z": 0, "sx": 0.1, "sy": 0.9, "sz": 0.1, "color": "#2b2b2b", "metalness": 0.5 },
+    { "shape": "cylinder", "x": 0, "y": 0.02, "z": 0, "sx": 0.6, "sy": 0.04, "sz": 0.6, "color": "#2b2b2b", "metalness": 0.5 }
+  ]
+}

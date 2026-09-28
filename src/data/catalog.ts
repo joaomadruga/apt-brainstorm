@@ -1,19 +1,44 @@
 // Catálogo de móveis. Dimensões em metros (w = largura em x, d = profundidade em y, h = altura).
 
-export type FurnitureType =
-  | "sofa" | "poltrona" | "mesaCentro" | "rack" | "tv" | "mesaJantar" | "cadeira" | "banqueta"
-  | "camaCasal" | "camaSolteiro" | "criado" | "guardaRoupa" | "escrivaninha" | "estante"
-  | "tapete" | "planta" | "luminaria" | "ilha"
-  | "bancada" | "geladeira" | "tanque" | "maquina" | "vaso" | "pia" | "box";
+// Móveis com modelo 3D escrito à mão ficam aqui e em components/Furniture3D.tsx.
+// Móveis novos: crie um arquivo em /furniture/<tipo>.json (ver AGENTS.md) — sem mexer em código.
+export type FurnitureType = string;
+
+export const GROUPS = ["Sala", "Jantar", "Quarto", "Escritório", "Decoração", "Cozinha", "Banheiro", "Varanda"] as const;
+export type Group = (typeof GROUPS)[number];
+
+/**
+ * Peça de um móvel paramétrico. Posições e tamanhos são FRAÇÕES do móvel:
+ * x,z ∈ [-0.5, 0.5] (centro da peça; z=+0.5 é a frente), y ∈ [0, 1] (centro da peça, 0 = chão).
+ * sx, sy, sz = tamanho da peça em fração de w, h, d.
+ */
+export interface Part {
+  shape: "box" | "cylinder" | "sphere";
+  x: number; y: number; z: number;
+  sx: number; sy: number; sz: number;
+  /** "base" = cor do móvel, "dark"/"light" = variação dela, ou "#rrggbb" */
+  color?: string;
+  roughness?: number;
+  metalness?: number;
+  opacity?: number;
+  /** cilindro: raio do topo relativo ao da base (1 = reto) */
+  taper?: number;
+  /** giro da peça em graus em torno de x/y/z (ex.: cilindro deitado → rz: 90) */
+  rx?: number; ry?: number; rz?: number;
+}
 
 export interface CatalogEntry {
   type: FurnitureType;
   name: string;
-  group: "Sala" | "Jantar" | "Quarto" | "Decoração" | "Cozinha" | "Banheiro";
+  group: Group;
   w: number;
   d: number;
   h: number;
   color: string;
+  /** se presente, o 3D é montado a partir destas peças */
+  parts?: Part[];
+  /** origem: "code" (Furniture3D.tsx) ou "repo" (/furniture/*.json) */
+  source?: "code" | "repo";
 }
 
 export const catalog: CatalogEntry[] = [
@@ -44,7 +69,22 @@ export const catalog: CatalogEntry[] = [
   { type: "box", name: "Box de vidro", group: "Banheiro", w: 0.8, d: 0.9, h: 2.0, color: "#bfe3ee" },
 ];
 
-export const catalogByType = Object.fromEntries(catalog.map((c) => [c.type, c])) as Record<FurnitureType, CatalogEntry>;
+catalog.forEach((c) => (c.source = "code"));
+
+export const catalogByType: Record<string, CatalogEntry> = Object.fromEntries(catalog.map((c) => [c.type, c]));
+
+/** Registra móveis vindos de /furniture/*.json (chamado uma vez no cliente). */
+export function registerCatalog(entries: CatalogEntry[]) {
+  for (const e of entries) {
+    const entry = { ...e, source: "repo" as const };
+    const i = catalog.findIndex((c) => c.type === e.type);
+    if (i >= 0) catalog[i] = entry;
+    else catalog.push(entry);
+    catalogByType[e.type] = entry;
+  }
+}
+
+export const entryName = (type: string) => catalogByType[type]?.name ?? type;
 
 export interface Item {
   id: string;
