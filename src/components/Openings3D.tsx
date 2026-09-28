@@ -2,6 +2,8 @@
 
 import * as THREE from "three";
 import { wallAxis, type Opening, type Wall } from "@/data/apartment";
+import { LAYER_PHOTO } from "@/lib/photo";
+import { OnLayer } from "./OnLayer";
 
 // Esquadrias em 3D. Tudo é montado no "referencial da parede":
 //   a = ao longo da parede (coordenada absoluta x ou y), t = espessura, z = altura.
@@ -156,8 +158,9 @@ function DoorModel({ w, o, height }: { w: Wall; o: Opening; height: number }) {
     <Box key="jL" ax={ax} a0={o.a0} a1={o.a0 + jamb} t0={t0 - 0.008} t1={t1 + 0.008} z0={0} z1={head}><meshStandardMaterial color={JAMB} roughness={0.6} /></Box>,
     <Box key="jR" ax={ax} a0={o.a1 - jamb} a1={o.a1} t0={t0 - 0.008} t1={t1 + 0.008} z0={0} z1={head}><meshStandardMaterial color={JAMB} roughness={0.6} /></Box>,
   ];
-  if (!clipped)
-    els.push(<Box key="jT" ax={ax} a0={o.a0} a1={o.a1} t0={t0 - 0.008} t1={t1 + 0.008} z0={head - jamb} z1={head}><meshStandardMaterial color={JAMB} roughness={0.6} /></Box>);
+  const jT = <Box ax={ax} a0={o.a0} a1={o.a1} t0={t0 - 0.008} t1={t1 + 0.008} z0={o.head - jamb} z1={o.head}><meshStandardMaterial color={JAMB} roughness={0.6} /></Box>;
+  // parede cortada: a travessa de cima só aparece na foto (camada LAYER_PHOTO)
+  els.push(clipped ? <OnLayer key="jT" layer={LAYER_PHOTO}>{jT}</OnLayer> : <group key="jT">{jT}</group>);
 
   // folha aberta: gira da posição fechada para o lado do "swing" (igual ao arco da planta)
   const leaf = o.a1 - o.a0 - 2 * jamb;
@@ -193,9 +196,11 @@ function DoorModel({ w, o, height }: { w: Wall; o: Opening; height: number }) {
 export function Openings3D({ w, height }: { w: Wall; height: number }) {
   return (
     <group>
-      {(w.openings ?? []).map((o, i) =>
-        o.kind === "door" ? <DoorModel key={i} w={w} o={o} height={height} /> : <WindowModel key={i} w={w} o={o} height={height} />,
-      )}
+      {(w.openings ?? []).map((o, i) => (
+        <group key={i} userData={{ tag: { kind: "opening", wall: w.id, index: i } }}>
+          {o.kind === "door" ? <DoorModel w={w} o={o} height={height} /> : <WindowModel w={w} o={o} height={height} />}
+        </group>
+      ))}
     </group>
   );
 }

@@ -37,6 +37,8 @@ export interface CatalogEntry {
   color: string;
   /** se presente, o 3D é montado a partir destas peças */
   parts?: Part[];
+  /** descrição em inglês usada no prompt da foto (ex.: "boucle loveseat with round arms") */
+  prompt?: string;
   /** origem: "code" (Furniture3D.tsx) ou "repo" (/furniture/*.json) */
   source?: "code" | "repo";
 }

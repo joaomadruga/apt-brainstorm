@@ -6,7 +6,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   // three.js/R3F: câmera, controles e objetos 3D são mutáveis por design
-  { files: ["src/components/Scene3D.tsx"], rules: { "react-hooks/immutability": "off" } },
+  { files: ["src/components/Scene3D.tsx", "src/components/PhotoCamera3D.tsx"], rules: { "react-hooks/immutability": "off" } },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

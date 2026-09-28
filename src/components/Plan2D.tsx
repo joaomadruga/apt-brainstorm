@@ -7,6 +7,31 @@ import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
 import { floorFinishes } from "@/lib/materials";
 import { usePlan, useStore } from "@/lib/store";
 import { usePlanColors, type PlanColors } from "@/lib/theme";
+import { aspectRatio, horizontalFov, usePhoto } from "@/lib/photo";
+
+/** câmera de foto na planta: cone de visão + corpo (arrasta = move) + alça (arrasta = mira) */
+function PhotoCamMark({ onDown }: { onDown: (e: React.PointerEvent, part: "cam" | "aim") => void }) {
+  const cam = usePhoto((s) => s.cam);
+  if (!cam) return null;
+  const hf = (horizontalFov(cam.lens, aspectRatio(cam.aspect)) * Math.PI) / 360;
+  const L = 2.4;
+  const a0 = -hf, a1 = hf;
+  const ex = (a: number) => [Math.cos(a) * L, -Math.sin(a) * L];
+  const [x0, y0] = ex(a0), [x1, y1] = ex(a1);
+  const aim = 0.9;
+  return (
+    <g transform={`translate(${cam.x} ${-cam.y}) rotate(${-cam.yaw})`}>
+      <path d={`M 0 0 L ${x0} ${y0} A ${L} ${L} 0 0 0 ${x1} ${y1} Z`} fill="#ff7a1a" fillOpacity={0.14} stroke="#ff7a1a" strokeWidth={0.015} strokeDasharray="0.06 0.04" style={{ pointerEvents: "none" }} />
+      <line x1={0} y1={0} x2={aim} y2={0} stroke="#ff7a1a" strokeWidth={0.025} style={{ pointerEvents: "none" }} />
+      <circle cx={aim} cy={0} r={0.09} fill="#ff7a1a" stroke="#fff" strokeWidth={0.02} style={{ cursor: "crosshair" }} onPointerDown={(e) => onDown(e, "aim")} />
+      <g onPointerDown={(e) => onDown(e, "cam")} style={{ cursor: "grab" }}>
+        <circle r={0.2} fill="#ff7a1a" fillOpacity={0.25} />
+        <rect x={-0.1} y={-0.08} width={0.17} height={0.16} rx={0.02} fill="#2b2b2b" />
+        <rect x={0.07} y={-0.05} width={0.07} height={0.1} fill="#ff7a1a" />
+      </g>
+    </g>
+  );
+}
 
 // SVG em metros; y da planta invertido (y_svg = -y)
 const PAD = 0.8;
@@ -154,6 +179,8 @@ export default function Plan2D() {
   const commit = useStore((s) => s.commit);
   const snap = useStore((s) => s.snap);
   const toggleWall = useStore((s) => s.toggleWall);
+  // só visualização: tocar em móvel/parede/cômodo não seleciona — o gesto segue para mover a vista
+  const viewOnly = useStore((s) => s.viewOnly);
   const { walls, rooms } = usePlan();
   const C = usePlanColors();
   const svgRef = useRef<SVGSVGElement>(null);
@@ -161,6 +188,8 @@ export default function Plan2D() {
   const drag = useRef<
     | { kind: "item"; id: string; dx: number; dy: number; moved: boolean }
     | { kind: "pan"; sx: number; sy: number; vb: typeof VB0 }
+    | { kind: "cam"; dx: number; dy: number }
+    | { kind: "aim" }
     | null
   >(null);
 
@@ -174,10 +203,28 @@ export default function Plan2D() {
   };
 
   const onItemDown = (e: React.PointerEvent, it: Item) => {
+    if (viewOnly) return;
     e.stopPropagation();
     select({ kind: "item", id: it.id });
     const p = toPlan(e);
     drag.current = { kind: "item", id: it.id, dx: it.x - p.x, dy: it.y - p.y, moved: false };
+    svgRef.current?.setPointerCapture(e.pointerId);
+  };
+  const placing = usePhoto((p) => p.placing);
+  const onCamDown = (e: React.PointerEvent, part: "cam" | "aim") => {
+    e.stopPropagation();
+    const c = usePhoto.getState().cam!;
+    const p = toPlan(e);
+    drag.current = part === "cam" ? { kind: "cam", dx: c.x - p.x, dy: c.y - p.y } : { kind: "aim" };
+    svgRef.current?.setPointerCapture(e.pointerId);
+  };
+  // posicionando: o clique vai para a câmera antes de qualquer outro elemento
+  const onPlaceDown = (e: React.PointerEvent) => {
+    if (!usePhoto.getState().placing || e.button !== 0) return;
+    e.stopPropagation();
+    const p = toPlan(e);
+    usePhoto.getState().place(p.x, p.y);
+    drag.current = { kind: "aim" };
     svgRef.current?.setPointerCapture(e.pointerId);
   };
   const onBgDown = (e: React.PointerEvent) => {
@@ -187,6 +234,12 @@ export default function Plan2D() {
   const onMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d) return;
+    if (d.kind === "cam" || d.kind === "aim") {
+      const p = toPlan(e);
+      if (d.kind === "cam") usePhoto.getState().place(p.x + d.dx, p.y + d.dy);
+      else usePhoto.getState().aimAt(p.x, p.y);
+      return;
+    }
     if (d.kind === "item") {
       if (!d.moved) {
         commit();
@@ -209,6 +262,7 @@ export default function Plan2D() {
   const onUp = (e: React.PointerEvent) => {
     const d = drag.current;
     if (d?.kind === "pan" && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 3) select(null);
+    if (d?.kind === "aim" && usePhoto.getState().placing) usePhoto.getState().setPlacing(false);
     drag.current = null;
   };
   const onWheel = (e: React.WheelEvent) => {
@@ -225,8 +279,9 @@ export default function Plan2D() {
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-        style={{ width: "100%", height: "100%", touchAction: "none", userSelect: "none" }}
+        style={{ width: "100%", height: "100%", touchAction: "none", userSelect: "none", cursor: placing ? "crosshair" : undefined }}
         onPointerDown={onBgDown}
+        onPointerDownCapture={onPlaceDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onWheel={onWheel}
@@ -253,6 +308,7 @@ export default function Plan2D() {
               stroke={sel ? "#ff7a1a" : "none"}
               strokeWidth={0.03}
               onPointerDown={(e) => {
+                if (viewOnly) return;
                 e.stopPropagation();
                 select({ kind: "room", id: r.id });
               }}
@@ -284,6 +340,7 @@ export default function Plan2D() {
           const isRemoved = removed.includes(w.id);
           const sel = selection?.kind === "wall" && selection.id === w.id;
           const onDown = (e: React.PointerEvent) => {
+            if (viewOnly) return;
             e.stopPropagation();
             select({ kind: "wall", id: w.id });
           };
@@ -311,6 +368,8 @@ export default function Plan2D() {
         {items.map((it) => (
           <ItemShape key={it.id} item={it} onDown={onItemDown} C={C} />
         ))}
+
+        <PhotoCamMark onDown={onCamDown} />
 
         {/* norte + escala */}
         <g transform={`translate(${bounds.maxX + 0.35} ${-bounds.maxY + 0.2})`} style={{ pointerEvents: "none" }}>

@@ -11,6 +11,10 @@ import { usePlan, useStore } from "@/lib/store";
 import { usePlanColors } from "@/lib/theme";
 import { FurnitureMesh } from "./Furniture3D";
 import { Openings3D } from "./Openings3D";
+import { OnLayer } from "./OnLayer";
+import { PhotoCamera3D, PhotoOverlay } from "./PhotoCamera3D";
+import { LAYER_EDITOR, LAYER_PHOTO } from "@/lib/photo";
+import { analyzeFrame } from "@/lib/photoPrompt";
 import { floorFinishes } from "@/lib/materials";
 import { floorTexture } from "@/lib/floorTextures";
 import type { Item } from "@/data/catalog";
@@ -32,8 +36,28 @@ function WallMesh({ w, height, edge }: { w: Wall; height: number; edge: string }
     select({ kind: "wall", id: w.id });
   };
   const H = w.height ?? height;
+  // com a maquete cortada, a foto (camada LAYER_PHOTO) ainda vê a parede inteira
+  const upper = useMemo(
+    () =>
+      w.kind === "parapet" || height >= CEILING
+        ? []
+        : wallPieces(w, CEILING)
+            .filter((p) => p.z1 > H + 1e-3)
+            .map((p) => ({ ...p, z0: Math.max(p.z0, H) })),
+    [w, height, H],
+  );
   return (
-    <group onClick={onClick}>
+    <group onClick={onClick} userData={{ tag: { kind: "wall", id: w.id } }}>
+      {upper.length > 0 && (
+        <OnLayer layer={LAYER_PHOTO}>
+          {upper.map((p, i) => (
+            <mesh key={i} position={toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2)} receiveShadow>
+              <boxGeometry args={[p.x1 - p.x0, p.z1 - p.z0, p.y1 - p.y0]} />
+              <meshStandardMaterial color={color} roughness={0.92} />
+            </mesh>
+          ))}
+        </OnLayer>
+      )}
       {pieces.map((p, i) => (
         <mesh key={i} position={toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2)} castShadow receiveShadow>
           <boxGeometry args={[p.x1 - p.x0, p.z1 - p.z0, p.y1 - p.y0]} />
@@ -95,6 +119,7 @@ function Floors({ rooms, walls }: { rooms: Room[]; walls: Wall[] }) {
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0.001, 0]}
             receiveShadow
+            userData={{ tag: { kind: "floor", id: r.id } }}
             onClick={(e) => {
               e.stopPropagation();
               select({ kind: "room", id: r.id });
@@ -131,7 +156,7 @@ function Ceiling({ rooms }: { rooms: Room[] }) {
   }, [rooms]);
   // normal para cima + BackSide = só aparece olhando de baixo
   return (
-    <group position={[0, CEILING, 0]}>
+    <group position={[0, CEILING, 0]} userData={{ tag: { kind: "ceiling" } }}>
       {geo.map((g, i) => (
         <mesh key={i} geometry={g} rotation={[-Math.PI / 2, 0, 0]}>
           <meshStandardMaterial color="#fbfaf7" side={THREE.BackSide} roughness={1} />
@@ -171,6 +196,8 @@ function ItemMesh({ item }: { item: Item }) {
     if (controls) controls.enabled = true;
   };
   const onDown = (e: ThreeEvent<PointerEvent>) => {
+    // só visualização (celular): o toque no móvel não seleciona nem arrasta — a câmera se move
+    if (useStore.getState().viewOnly) return;
     e.stopPropagation();
     select({ kind: "item", id: item.id });
     // só o botão esquerdo arrasta o móvel; meio/direito continuam girando a câmera
@@ -218,6 +245,7 @@ function ItemMesh({ item }: { item: Item }) {
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
+      userData={{ tag: { kind: "item", id: item.id } }}
       // o clique (ao soltar) não pode atravessar até o piso/parede atrás — senão troca a seleção
       onClick={(e) => e.stopPropagation()}
     >
@@ -371,15 +399,21 @@ function CaptureBridge() {
       const prevRatio = gl.getPixelRatio();
       gl.setPixelRatio(Math.min(4, prevRatio * scale));
       gl.setSize(size.width, size.height, false);
+      camera.layers.disable(LAYER_EDITOR); // sem o marcador da câmera de foto
       gl.render(scene, camera);
       const url = gl.domElement.toDataURL("image/png");
+      camera.layers.enable(LAYER_EDITOR);
       gl.setPixelRatio(prevRatio);
       gl.setSize(size.width, size.height, false);
       select(prevSel);
       const cam = camera as THREE.PerspectiveCamera;
       const dir = new THREE.Vector3();
       cam.getWorldDirection(dir);
+      const report = analyzeFrame(scene, cam, [0], size.width / size.height);
       return {
+        kind: "view" as const,
+        aspect: `${size.width}:${size.height}`,
+        report,
         url,
         width: Math.round(size.width * prevRatio * scale),
         height: Math.round(size.height * prevRatio * scale),
@@ -417,7 +451,13 @@ function World() {
       {items.map((i) => (
         <ItemMesh key={i.id} item={i} />
       ))}
-      {showCeiling && !cutaway && <Ceiling rooms={rooms} />}
+      {showCeiling && !cutaway ? (
+        <Ceiling rooms={rooms} />
+      ) : (
+        <OnLayer layer={LAYER_PHOTO}>
+          <Ceiling rooms={rooms} />
+        </OnLayer>
+      )}
     </group>
   );
 }
@@ -430,6 +470,7 @@ function Background() {
 export default function Scene3D() {
   const select = useStore((s) => s.select);
   return (
+    <div className="scene-wrap">
     <Canvas
       shadows
       dpr={[1, 2]}
@@ -457,6 +498,9 @@ export default function Scene3D() {
       />
       <CameraRig />
       <CaptureBridge />
+      <PhotoCamera3D />
     </Canvas>
+    <PhotoOverlay />
+    </div>
   );
 }

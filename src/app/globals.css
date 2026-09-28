@@ -166,3 +166,12 @@ kbd { font: 11px var(--font-geist-mono), monospace; border: 1px solid var(--line
 .fpreview-info { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px 10px; background: var(--panel); }
 .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .localnote[title] { cursor: help; }
+
+/* câmera fotográfica: prévia no canto do 3D */
+.scene-wrap { position: relative; width: 100%; height: 100%; }
+.photo-overlay { position: absolute; inset: 0; pointer-events: none; }
+.photo-pip { position: absolute; border: 2px solid #ff7a1a; border-radius: 4px; box-shadow: 0 4px 16px rgba(0, 0, 0, .25); }
+.photo-pip-bar { position: absolute; left: -2px; right: -2px; bottom: 100%; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 6px; background: #ff7a1a; color: #fff; font-size: 11px; border-radius: 4px 4px 0 0; pointer-events: auto; }
+.photo-pip-bar button.icon { background: transparent; border: 0; color: #fff; padding: 0 2px; cursor: pointer; font-size: 12px; }
+.photo-shoot { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); pointer-events: auto; white-space: nowrap; }
+.photo-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: #ff7a1a; color: #fff; font-size: 12px; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }

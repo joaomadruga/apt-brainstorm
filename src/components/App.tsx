@@ -2,13 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { entryName, type CatalogEntry } from "@/data/catalog";
+import type { CatalogEntry } from "@/data/catalog";
 import { startRepoAutosave, type AutosaveStatus } from "@/lib/autosave";
 import { capture, type CaptureResult } from "@/lib/capture";
-import { floorFinishes, wallPalette } from "@/lib/materials";
 import { registerRepo, useStore } from "@/lib/store";
 import type { VersionFile } from "@/lib/files";
-import { resolvePlan, roomAt as roomIn } from "@/lib/plan";
+import { ensure3D, takePhoto, usePhoto } from "@/lib/photo";
+import { buildFramePrompt } from "@/lib/photoPrompt";
 import { useResolvedTheme } from "@/lib/theme";
 import Plan2D from "./Plan2D";
 import Sidebar from "./Sidebar";
@@ -16,42 +16,9 @@ import VersionsScreen from "./Versions";
 
 const Scene3D = dynamic(() => import("./Scene3D"), { ssr: false, loading: () => <div className="loading">Carregando 3D…</div> });
 
-function buildPrompt(r: CaptureResult) {
-  const st = useStore.getState();
-  const { rooms, walls } = resolvePlan(st);
-  const roomAt = (x: number, y: number) => roomIn(rooms, x, y);
-  const cam = r.camera;
-  const room = roomAt(cam.x, cam.y);
-  const deg = (Math.atan2(cam.dir.y, cam.dir.x) * 180) / Math.PI;
-  const compass = ["leste", "nordeste", "norte", "noroeste", "oeste", "sudoeste", "sul", "sudeste"][Math.round(((deg + 360) % 360) / 45) % 8];
-  const pitch = (Math.asin(Math.max(-1, Math.min(1, cam.dir.z))) * 180) / Math.PI;
-  const wallName = wallPalette.find((p) => p.color === st.wallColor)?.name ?? st.wallColor;
-  const furniture = st.items
-    .map((i) => `${entryName(i.type)} (${i.w.toFixed(2)}×${i.d.toFixed(2)} m, ${roomAt(i.x, i.y)?.name ?? "—"})`)
-    .join("; ");
-  const floorsTxt = rooms.map((rm) => `${rm.name}: ${floorFinishes[st.floors[rm.id] ?? rm.floor].prompt}`).join("; ");
-  const removed = st.removedWalls.map((id) => walls.find((w) => w.id === id)?.name).filter(Boolean);
-  const hh = Math.floor(st.hour), mm = Math.round((st.hour % 1) * 60);
-  const inside = room && cam.z < 2.6;
-  return [
-    "Photorealistic interior architectural render of a compact 52 m² apartment in Recife, Brazil (2 bedrooms: master suite + bedroom, living room with balcony, open kitchen with laundry corner, 2 bathrooms).",
-    "Keep EXACTLY the same camera angle, framing, perspective, room layout, wall positions, openings and furniture placement as the reference image. Only improve materials, lighting and realism; do not add or move walls, doors or windows.",
-    inside
-      ? `Camera: eye-level inside the ${room!.name}, ${cam.z.toFixed(2)} m above floor, looking ${compass} (pitch ${pitch.toFixed(0)}°), ${cam.fov.toFixed(0)}° vertical FOV.`
-      : `Camera: ${pitch < -60 ? "top-down" : "elevated three-quarter"} view of the cut-away apartment model, looking ${compass}, pitch ${pitch.toFixed(0)}°.`,
-    `Ceiling height 2.60 m. Walls painted ${wallName}. Floors — ${floorsTxt}.`,
-    `Windows: sliding aluminium windows with 1.10 m sills; full-height 2.00 m sliding glass door to the balcony with a 1.10 m glass railing.`,
-    `Time of day ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}, tropical natural daylight${st.hour > 17.7 || st.hour < 6.3 ? " (night, warm interior lamps)" : ""}.`,
-    removed.length ? `Removed walls (open plan): ${removed.join(", ")}.` : "",
-    `Furniture present: ${furniture}.`,
-    "Style: contemporary Brazilian, natural textures, soft shadows, 35mm lens look, high dynamic range, no people, no text.",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
 function CaptureModal({ shot, onClose }: { shot: CaptureResult; onClose: () => void }) {
-  const [prompt] = useState(() => buildPrompt(shot));
+  const [prompt] = useState(() => buildFramePrompt(shot.report, shot));
+  const isPhoto = shot.kind === "photo";
   const vname = useStore((s) => s.versions.find((v) => v.id === s.activeId)?.name ?? "apto1707");
   const slug = vname.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
   const [copied, setCopied] = useState("");
@@ -73,12 +40,12 @@ function CaptureModal({ shot, onClose }: { shot: CaptureResult; onClose: () => v
           <img src={shot.url} alt="captura" />
         </div>
         <div className="modal-side">
-          <strong>Captura {shot.width}×{shot.height}px</strong>
+          <strong>{isPhoto ? `Foto · ${shot.lens} mm · ${shot.aspect}` : "Captura"} · {shot.width}×{shot.height}px</strong>
           <div className="row">
             <a className="btn primary" href={shot.url} download={`apto1707-${slug}-${stamp}.png`}>Baixar PNG</a>
             <button onClick={copyImage}>Copiar imagem</button>
           </div>
-          <span className="small">Prompt sugerido para o modelo de imagem (envie junto com o PNG):</span>
+          <span className="small" title="Lista só o que aparece no quadro (paredes, portas, janelas e móveis visíveis)">Prompt do que está no quadro (envie junto com o PNG):</span>
           <textarea readOnly value={prompt} rows={14} />
           <div className="row">
             <button
@@ -97,6 +64,9 @@ function CaptureModal({ shot, onClose }: { shot: CaptureResult; onClose: () => v
     </div>
   );
 }
+
+/** telas em que o app vira só visualização (sem edição) */
+const VIEW_ONLY_QUERY = "(max-width: 900px), (hover: none) and (pointer: coarse)";
 
 /** Abre/fecha as divisórias camarão (móvel "divisoria") com animação no 3D — flutua sempre no canto */
 function PartitionToggle() {
@@ -137,6 +107,7 @@ export default function App({
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setHydrated(true), []);
 
+  const photoShot = usePhoto((p) => p.shot);
   const doCapture = useCallback(async () => {
     if (useStore.getState().view === "2d") useStore.getState().setView("split");
     await new Promise((r) => setTimeout(r, 400));
@@ -161,7 +132,11 @@ export default function App({
       }
       if (mod) return;
       if (e.key === "p" || e.key === "P") doCapture();
-      if (e.key === "Escape") s.select(null);
+      if (e.key === "f" || e.key === "F") takePhoto(ensure3D);
+      if (e.key === "Escape") {
+        s.select(null);
+        usePhoto.getState().setPlacing(false);
+      }
       const sel = s.selection;
       if (!sel) return;
       if (e.key === "Delete" || e.key === "Backspace") {
@@ -210,6 +185,15 @@ export default function App({
     window.history.pushState(null, "", url);
   }, [hydrated, screen, activeId]);
 
+  // celular/tablet (tela estreita ou só toque): modo só visualização
+  useEffect(() => {
+    const mq = window.matchMedia(VIEW_ONLY_QUERY);
+    const apply = () => useStore.getState().setViewOnly(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   // rodando local: cada edição grava versions/<id>.json (ver lib/autosave.ts)
   useEffect(() => {
     if (!hydrated || !canSaveToRepo) return;
@@ -249,6 +233,7 @@ export default function App({
       <PartitionToggle />
       {autosaveToast}
       {shot && <CaptureModal shot={shot} onClose={() => setShot(null)} />}
+      {photoShot && !shot && <CaptureModal key={photoShot.url.length} shot={photoShot} onClose={() => usePhoto.getState().setShot(null)} />}
     </div>
   );
 }

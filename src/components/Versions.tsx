@@ -103,6 +103,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
   const [name, setName] = useState(v.name);
   const [showPlan, setShowPlan] = useState(!v.thumb);
   const active = s.activeId === v.id;
+  const viewOnly = s.viewOnly;
   const save = () => {
     s.renameVersion(v.id, name);
     setEditing(false);
@@ -140,7 +141,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
             }}
           />
         ) : (
-          <strong onDoubleClick={() => setEditing(true)} title="Duplo clique para renomear">{v.name}</strong>
+          <strong onDoubleClick={() => !viewOnly && setEditing(true)} title={viewOnly ? undefined : "Duplo clique para renomear"}>{v.name}</strong>
         )}
         <StatusBadge v={v} />
         {v.description && <span className="small clamp2" title={v.description}>{v.description}</span>}
@@ -149,6 +150,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
       </div>
       <div className="row">
         <button className="primary" onClick={() => s.openVersion(v.id)}>Abrir</button>
+        {!viewOnly && <>
         <button onClick={() => { setName(v.name); setEditing(true); }}>Renomear</button>
         <button onClick={() => s.duplicateVersion(v.id)}>Duplicar</button>
         <button
@@ -163,8 +165,9 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
         >
           {v.repo ? "Esconder" : "Excluir"}
         </button>
+        </>}
       </div>
-      <div className="row">
+      {!viewOnly && <div className="row">
         <button onClick={() => download(versionToFile(v, s.versions))} title="Baixa o arquivo para colocar em /versions e commitar">
           ⬇ JSON
         </button>
@@ -176,7 +179,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
             ↺ Descartar edição
           </button>
         )}
-      </div>
+      </div>}
       {msg && <span className="small muted">{msg}</span>}
     </div>
   );
@@ -200,6 +203,7 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
   const versions = useStore((s) => s.versions);
   const createVersion = useStore((s) => s.createVersion);
   const openVersion = useStore((s) => s.openVersion);
+  const viewOnly = useStore((s) => s.viewOnly);
   const [name, setName] = useState("");
   const [from, setFrom] = useState<string>("original");
   const [sort, setSort] = useState<"updated" | "name" | "created">("updated");
@@ -234,14 +238,16 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
         className="localnote"
         title="Versões “repo” vêm de versions/ no repositório. Criar, editar ou renomear aqui não sai deste navegador. Para guardar: Exportar JSON e commitar em versions/."
       >
-        {canSaveToRepo ? (
+        {viewOnly ? (
+          <>📱 No celular o app é só para ver — abra uma versão e explore em 3D ou 2D. Para editar, use um computador.</>
+        ) : canSaveToRepo ? (
           <>💾 Rodando local: toda edição é gravada automaticamente em <strong>versions/</strong> — falta só commitar.</>
         ) : (
           <>⚠️ Edições aqui ficam só neste navegador. Para guardar, use <strong>Exportar JSON</strong>.</>
         )}
       </div>
 
-      <section className="vnew">
+      {!viewOnly && <section className="vnew">
         <strong>Nova versão</strong>
         <input
           placeholder="Nome da versão"
@@ -264,7 +270,7 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
           <button className="primary" onClick={() => create(true)}>Criar e abrir</button>
           <button onClick={() => create(false)}>Só criar</button>
         </div>
-      </section>
+      </section>}
 
       <div className="vbar">
         <span className="muted small">{versions.length} versão(ões)</span>

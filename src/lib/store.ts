@@ -42,6 +42,8 @@ interface State extends Snapshot {
   snap: boolean;
   /** divisórias (tipo "divisoria") fechadas — só visual, não entra na versão */
   partitionsClosed: boolean;
+  /** celular/tablet: só visualização — as ações de edição viram no-op (ver EDIT_ACTIONS) */
+  viewOnly: boolean;
   theme: Theme;
   past: Snapshot[];
   future: Snapshot[];
@@ -60,6 +62,7 @@ interface State extends Snapshot {
   setHour: (h: number) => void;
   setSnap: (v: boolean) => void;
   togglePartitions: () => void;
+  setViewOnly: (v: boolean) => void;
   setTheme: (t: Theme) => void;
   goCamera: (p: CameraPreset) => void;
 
@@ -170,6 +173,7 @@ export const useStore = create<State>()(
       hour: 10,
       snap: true,
       partitionsClosed: false,
+      viewOnly: false,
       theme: "light",
       past: [],
       future: [],
@@ -186,6 +190,7 @@ export const useStore = create<State>()(
       setHour: (hour) => set({ hour }),
       setSnap: (snap) => set({ snap }),
       togglePartitions: () => set((s) => ({ partitionsClosed: !s.partitionsClosed })),
+      setViewOnly: (viewOnly) => set(viewOnly ? { viewOnly, selection: null } : { viewOnly }),
       setTheme: (theme) => set({ theme }),
       goCamera: (preset) => set((s) => ({ cameraPreset: { preset, nonce: s.cameraPreset.nonce + 1 } })),
 
@@ -389,6 +394,26 @@ export const useStore = create<State>()(
     },
   ),
 );
+
+// Modo só visualização (celular): toda ação que altera a planta ou as versões vira no-op.
+// Bloquear aqui cobre qualquer caminho da interface (atalhos, 2D, 3D, sidebar).
+const EDIT_ACTIONS = [
+  "commit", "undo", "redo", "addItem", "moveItem", "updateItem", "rotateItem", "removeItem", "duplicateItem",
+  "toggleWall", "restoreWalls", "setFloor", "setWallColor", "reset",
+  "createVersion", "renameVersion", "duplicateVersion", "deleteVersion", "revertToRepo",
+] as const satisfies readonly (keyof State)[];
+{
+  const s0 = useStore.getState();
+  const guarded: Partial<State> = {};
+  for (const k of EDIT_ACTIONS) {
+    const fn = s0[k] as (...a: unknown[]) => unknown;
+    (guarded as Record<string, unknown>)[k] = (...a: unknown[]) => (useStore.getState().viewOnly ? undefined : fn(...a));
+  }
+  // selecionar abre o painel de edição: no modo visualização só "desselecionar" passa
+  const select = s0.select;
+  guarded.select = (sel) => (useStore.getState().viewOnly && sel ? undefined : select(sel));
+  useStore.setState(guarded);
+}
 
 /** paredes e cômodos da versão aberta (planta base + edições da versão) */
 export function usePlan() {

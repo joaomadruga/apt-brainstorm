@@ -8,11 +8,12 @@ import { floorFinishes, wallPalette } from "@/lib/materials";
 import { usePlan, useStore, type Theme } from "@/lib/store";
 import { roomAt } from "@/lib/plan";
 import { LivePreview, ThumbFactory, useThumb } from "./FurniturePreview";
+import { ASPECTS, EYE_H, LENSES, ensure3D, takePhoto, usePhoto } from "@/lib/photo";
 
 // Regra de texto da UI: rótulos curtos, avisos em 1 frase, detalhes no `title` (tooltip). Ver AGENTS.md.
 
 const kindLabel = { ext: "Fachada / divisa", int: "Interna", pillar: "Pilar", parapet: "Guarda-corpo" } as const;
-type Tab = "moveis" | "editar" | "vista";
+type Tab = "moveis" | "editar" | "vista" | "foto";
 
 // ------------------------------------------------------------------ Editar (seleção)
 function Inspector() {
@@ -223,7 +224,7 @@ function ViewTab() {
       </div>
       <label className="check"><input type="checkbox" checked={s.cutaway} onChange={(e) => s.setCutaway(e.target.checked)} /> Paredes cortadas</label>
       <label className="check" title="Aparece com as paredes inteiras"><input type="checkbox" checked={s.showCeiling} onChange={(e) => s.setShowCeiling(e.target.checked)} /> Teto</label>
-      <label className="check"><input type="checkbox" checked={s.snap} onChange={(e) => s.setSnap(e.target.checked)} /> Grade de 5 cm</label>
+      {!s.viewOnly && <label className="check"><input type="checkbox" checked={s.snap} onChange={(e) => s.setSnap(e.target.checked)} /> Grade de 5 cm</label>}
       <label className="field">
         <span>Luz do dia · {hh}</span>
         <input type="range" min={5.5} max={19} step={0.25} value={s.hour} onChange={(e) => s.setHour(Number(e.target.value))} />
@@ -236,6 +237,7 @@ function ViewTab() {
           </button>
         ))}
       </div>
+      {!s.viewOnly && <>
       <details className="small muted">
         <summary>Atalhos</summary>
         <ul className="keys">
@@ -243,10 +245,60 @@ function ViewTab() {
           <li><kbd>roda</kbd> zoom · <kbd>clique na roda</kbd> gira</li>
           <li><kbd>R</kbd> gira móvel · <kbd>Del</kbd> remove</li>
           <li><kbd>W A S D</kbd> anda · <kbd>Q E</kbd> vira</li>
-          <li><kbd>⌘Z</kbd> desfaz · <kbd>P</kbd> captura</li>
+          <li><kbd>⌘Z</kbd> desfaz · <kbd>P</kbd> captura · <kbd>F</kbd> foto</li>
         </ul>
       </details>
       <button className="ghost danger" onClick={() => confirm("Voltar esta versão ao projeto original?") && s.reset()}>Resetar versão</button>
+      </>}
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ Foto (câmera na altura do olho)
+const COMPASS = ["L", "NE", "N", "NO", "O", "SO", "S", "SE"];
+function PhotoTab() {
+  const p = usePhoto();
+  const c = p.cam;
+  const dirLabel = c ? COMPASS[Math.round((((c.yaw % 360) + 360) % 360) / 45) % 8] : "";
+  const br = (n: number, d = 2) => n.toFixed(d).replace(".", ",");
+  return (
+    <div className="stack">
+      <button className={p.placing ? "on" : c ? "" : "primary"} onClick={() => p.setPlacing(!p.placing)} title="Clique no chão (2D ou 3D) onde a pessoa fica e arraste para onde ela olha">
+        {p.placing ? "Clique no chão… (Esc)" : c ? "📍 Reposicionar" : "📍 Posicionar câmera"}
+      </button>
+      {!c ? (
+        <span className="small muted">Clique no chão e arraste para mirar.</span>
+      ) : (
+        <>
+          <label className="field">
+            <span>Altura · {br(c.h)} m</span>
+            <input type="range" min={0.4} max={2.2} step={0.05} value={c.h} onChange={(e) => p.update({ h: Number(e.target.value) })} onDoubleClick={() => p.update({ h: EYE_H })} title="Duplo clique volta a 1,60 m" />
+          </label>
+          <label className="field">
+            <span>Direção · {Math.round(c.yaw)}° {dirLabel}</span>
+            <input type="range" min={-180} max={180} step={1} value={((c.yaw + 540) % 360) - 180} onChange={(e) => p.update({ yaw: Number(e.target.value) })} />
+          </label>
+          <label className="field">
+            <span>Inclinação · {Math.round(c.pitch)}°</span>
+            <input type="range" min={-45} max={45} step={1} value={c.pitch} onChange={(e) => p.update({ pitch: Number(e.target.value) })} onDoubleClick={() => p.update({ pitch: 0 })} title="Duplo clique nivela" />
+          </label>
+          <span className="label">Lente</span>
+          <div className="seg3">
+            {LENSES.map((l) => (
+              <button key={l} className={c.lens === l ? "on" : ""} onClick={() => p.update({ lens: l })} title={l <= 20 ? "Grande angular (distorce)" : l >= 35 ? "Mais fechada" : "Grande angular natural"}>{l}</button>
+            ))}
+          </div>
+          <span className="label">Formato</span>
+          <div className="seg3">
+            {ASPECTS.map((a) => (
+              <button key={a} className={c.aspect === a ? "on" : ""} onClick={() => p.update({ aspect: a })}>{a}</button>
+            ))}
+          </div>
+          <label className="check"><input type="checkbox" checked={p.preview} onChange={(e) => p.setPreview(e.target.checked)} /> Prévia no 3D</label>
+          <button className="primary" disabled={p.busy} onClick={() => takePhoto(ensure3D)} title="Foto + prompt do que está no quadro (F)">📸 Tirar foto</button>
+          <button className="ghost danger" onClick={p.clear}>Remover câmera</button>
+        </>
+      )}
     </div>
   );
 }
@@ -255,9 +307,11 @@ function ViewTab() {
 function VersionName() {
   const version = useStore((s) => s.versions.find((v) => v.id === s.activeId));
   const rename = useStore((s) => s.renameVersion);
+  const viewOnly = useStore((s) => s.viewOnly);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   if (!version) return null;
+  if (viewOnly) return <h1 className="vname">{version.name}</h1>;
   if (editing)
     return (
       <input
@@ -327,15 +381,19 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
       <header className="sb-head">
         <div className="row between">
           <button className="ghost back" onClick={goVersions}>← Versões</button>
-          <button className="ghost small" onClick={saveAs} title="Duplicar esta versão com outro nome">⧉ Nova variação</button>
+          {!s.viewOnly && <button className="ghost small" onClick={saveAs} title="Duplicar esta versão com outro nome">⧉ Nova variação</button>}
         </div>
         <VersionName />
+        {s.viewOnly ? (
+          <span className="vstatus" title="No celular o app é só para ver. Para editar, abra num computador.">📱 Só visualização</span>
+        ) : (
         <span
           className={`vstatus ${version?.repo && !version.dirty ? "repo" : "warn"}`}
           title="Edições feitas no app ficam só neste navegador — não vão para o repositório. Para guardar: Exportar JSON na tela de versões."
         >
           {status} ⓘ
         </span>
+        )}
       </header>
 
       <div className="sb-tools">
@@ -347,14 +405,19 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
           ))}
         </div>
         <div className="row compact">
-          <button onClick={s.undo} disabled={!s.past.length} title="Desfazer (⌘Z)">↶</button>
-          <button onClick={s.redo} disabled={!s.future.length} title="Refazer (⌘⇧Z)">↷</button>
+          {!s.viewOnly && <>
+            <button onClick={s.undo} disabled={!s.past.length} title="Desfazer (⌘Z)">↶</button>
+            <button onClick={s.redo} disabled={!s.future.length} title="Refazer (⌘⇧Z)">↷</button>
+          </>}
           <button className="primary grow" onClick={onCapture} title="Captura PNG do ângulo atual + prompt (P)">📸 Capturar</button>
         </div>
       </div>
 
+      {s.viewOnly ? (
+        <div className="sb-body"><ViewTab /></div>
+      ) : (<>
       <nav className="tabs">
-        {([["moveis", "Móveis"], ["editar", "Editar"], ["vista", "Vista"]] as const).map(([k, l]) => (
+        {([["moveis", "Móveis"], ["editar", "Editar"], ["vista", "Vista"], ["foto", "Foto"]] as const).map(([k, l]) => (
           <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>
         ))}
       </nav>
@@ -363,7 +426,9 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
         {tab === "moveis" && <FurnitureTab />}
         {tab === "editar" && <Inspector />}
         {tab === "vista" && <ViewTab />}
+        {tab === "foto" && <PhotoTab />}
       </div>
+      </>)}
     </aside>
   );
 }

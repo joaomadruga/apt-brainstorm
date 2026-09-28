@@ -162,6 +162,7 @@ export function validateFurnitureFile(e: CatalogEntry, fileId?: string): string[
   if (!GROUPS.includes(e.group)) err(`group deve ser um de: ${GROUPS.join(", ")}`);
   for (const k of ["w", "d", "h"] as const) if (!(isNum(e[k]) && e[k] > 0)) err(`${k} precisa ser número > 0 (metros)`);
   if (!isHex(e.color)) err("color precisa ser #rrggbb");
+  if (e.prompt !== undefined && (typeof e.prompt !== "string" || !e.prompt.trim())) err("prompt, se presente, precisa ser texto");
   if (!Array.isArray(e.parts) || !e.parts.length) err("parts: lista com pelo menos uma peça");
   (e.parts ?? []).forEach((p, i) => {
     if (!["box", "cylinder", "sphere"].includes(p.shape)) err(`parts[${i}]: shape deve ser box, cylinder ou sphere`);

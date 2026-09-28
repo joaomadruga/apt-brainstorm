@@ -156,6 +156,8 @@ Retângulo alinhado aos eixos: `x0 < x1`, `y0 < y1`. O eixo mais longo é o "com
 - `shape`: `box`, `cylinder` (eixo vertical; `taper` = raio do topo ÷ base; `rz: 90` deita), `sphere`.
 - `color`: `base` (cor do item), `dark`, `light` (variações dela) ou `#rrggbb`. Opcionais: `roughness`,
   `metalness`, `opacity`, `rx/ry/rz` (graus).
+- `prompt` (opcional, **inglês**): como o móvel é descrito no prompt da foto, ex.
+  `"prompt": "boucle loveseat with rounded arms"`. Sem ele, usa o nome em português.
 - Exemplos: `furniture/aparador.json`, `furniture/mesa-lateral.json`. O móvel aparece no painel
   "Adicionar móveis" no grupo escolhido e pode ser usado em `items[].type`.
 - Móveis com modelo mais elaborado vivem no código (`src/data/catalog.ts` + `src/components/Furniture3D.tsx`,
@@ -181,7 +183,8 @@ Retângulo alinhado aos eixos: `x0 < x1`, `y0 < y1`. O eixo mais longo é o "com
 - `src/lib/plan.ts` — junta planta base + edições da versão (`resolvePlan`).
 - `src/lib/store.ts` — estado (zustand + localStorage), versões, sincronização com o repo, desfazer.
 - `src/lib/repo.server.ts` — lê `versions/` e `furniture/` no build; `src/app/api/versions/route.ts` — grava (só dev).
-- `src/components/` — `Plan2D` (SVG), `Scene3D` + `Furniture3D` (react-three-fiber), `Sidebar`, `Versions`, `App`.
+- `src/components/` — `Plan2D` (SVG), `Scene3D` + `Furniture3D` (react-three-fiber), `Sidebar`, `Versions`, `App`,
+  `PhotoCamera3D` (câmera fotográfica); `src/lib/photo.ts` + `photoPrompt.ts` (foto e prompt).
 - `src/lib/theme.ts` — tema claro/escuro/auto (cores da planta e do 3D); tokens CSS em `src/app/globals.css`.
 - `scripts/validate.ts` — `npm run validate` / `npm run plan`.
 
@@ -203,7 +206,21 @@ EA3 1,20×1,10 peit. 1,10; EA5 0,60×0,60 peit. 1,60; EA27 1,00×1,10 peit. 1,10
 Cabeçalho (← Versões, nome editável, selo de status, ⧉ Nova variação) → barra (3D / 2D+3D / 2D, desfazer,
 📸 Capturar) → abas **Móveis** (prévia 3D + miniaturas; clique mostra, duplo clique ou "Adicionar" coloca),
 **Editar** (seleção atual; abre sozinha ao clicar em algo), **Vista** (câmera, teto, grade, luz, tema,
-atalhos). Coisas novas entram numa dessas abas — não crie seções soltas.
+atalhos), **Foto** (câmera fotográfica). Coisas novas entram numa dessas abas — não crie seções soltas.
+
+## Câmera fotográfica (aba Foto)
+
+- Uma câmera "de pessoa" parada num ponto (altura padrão 1,60 m, direção, inclinação, lente 16–50 mm,
+  formato). Posiciona clicando no chão (2D ou 3D) e arrastando para mirar; o marcador arrasta (corpo = move,
+  bolinha = mira). Estado em `src/lib/photo.ts` (localStorage `apto-1707-photo`, **não** entra na versão).
+- Prévia ao vivo no canto inferior esquerdo do 3D (`PhotoCamera3D.tsx`, `useFrame` prioridade 1 renderiza a
+  cena + a prévia com scissor). **F** ou "📸 Tirar foto" → PNG 1920 px + prompt no modal.
+- Camadas do three: `LAYER_PHOTO` (1) = só a foto vê — parte de cima das paredes quando a maquete está
+  cortada, teto, travessa das portas; `LAYER_EDITOR` (2) = só o editor vê — marcador da câmera.
+- **Prompt só do que está no quadro** (`src/lib/photoPrompt.ts`): `analyzeFrame` lança uma grade de raios
+  e anota o que cada um acerta (vidro é atravessado) pelo `userData.tag` do grupo — `item`, `wall`,
+  `opening`, `floor`, `ceiling`. **Mesh nova na cena precisa estar sob um grupo com `userData.tag`**, senão
+  não entra no prompt. Nomes em inglês dos móveis do código: mapa `EN`; dos JSON: campo `prompt`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
