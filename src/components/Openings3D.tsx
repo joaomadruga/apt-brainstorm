@@ -8,11 +8,45 @@ import { wallAxis, type Opening, type Wall } from "@/data/apartment";
 // Mundo: (x, z, -y).
 
 const ALU = "#b9bec4";
-const ALU_DARK = "#8e949b";
+const ALU_DARK = "#a3a9b0";
 const GRANITE = "#e7e2d8";
 const JAMB = "#f2eee6";
 const LEAF = "#d8bf9a";
-const GLASS = { color: "#d7eef7", transparent: true, opacity: 0.28, roughness: 0.04, metalness: 0.1 } as const;
+// vidro bem visível: tom azul-esverdeado, leve brilho próprio pra não sumir na sombra
+const GLASS = {
+  color: "#8fc3d8",
+  emissive: "#5d9fbd",
+  emissiveIntensity: 0.25,
+  transparent: true,
+  opacity: 0.5,
+  roughness: 0.05,
+  metalness: 0.2,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+} as const;
+
+/** reflexo diagonal no vidro (duas faixas claras) */
+function Glare({ ax, a0, a1, tc, z0, z1 }: { ax: Axis; a0: number; a1: number; tc: number; z0: number; z1: number }) {
+  const w = a1 - a0, h = z1 - z0;
+  if (w < 0.15 || h < 0.15) return null;
+  const [cx, cy] = ax === "x" ? [(a0 + a1) / 2, tc] : [tc, (a0 + a1) / 2];
+  const ang = Math.atan2(h, w) * 0.8;
+  const len = Math.hypot(w, h) * 0.55;
+  const rotY = ax === "x" ? 0 : Math.PI / 2;
+  return (
+    <group position={[cx, (z0 + z1) / 2, -cy]} rotation={[0, rotY, 0]}>
+      {[
+        [-0.12, 0.06],
+        [0.02, 0.025],
+      ].map(([off, thick], i) => (
+        <mesh key={i} position={[off * w, 0, 0]} rotation={[0, 0, ang]}>
+          <planeGeometry args={[thick, len]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.35} side={THREE.DoubleSide} depthWrite={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
 
 type Axis = "x" | "y";
 
@@ -41,9 +75,12 @@ function Sash({ ax, a0, a1, tc, z0, z1, depth = 0.03, bar = 0.035 }: { ax: Axis;
       <Box ax={ax} a0={a0} a1={a1} t0={t0} t1={t1} z0={z1 - b} z1={z1}><Alu /></Box>
       <Box ax={ax} a0={a0} a1={a0 + b} t0={t0} t1={t1} z0={z0} z1={z1}><Alu /></Box>
       <Box ax={ax} a0={a1 - b} a1={a1} t0={t0} t1={t1} z0={z0} z1={z1}><Alu /></Box>
-      <Box ax={ax} a0={a0 + b} a1={a1 - b} t0={tc - 0.004} t1={tc + 0.004} z0={z0 + b} z1={z1 - b}>
-        <meshPhysicalMaterial {...GLASS} />
+      <Box ax={ax} a0={a0 + b} a1={a1 - b} t0={tc - 0.005} t1={tc + 0.005} z0={z0 + b} z1={z1 - b}>
+        <meshStandardMaterial {...GLASS} />
       </Box>
+      {[-1, 1].map((s) => (
+        <Glare key={s} ax={ax} a0={a0 + b} a1={a1 - b} tc={tc + s * 0.0065} z0={z0 + b} z1={z1 - b} />
+      ))}
     </group>
   );
 }
@@ -53,8 +90,10 @@ function WindowModel({ w, o, height }: { w: Wall; o: Opening; height: number }) 
   const t0 = ax === "x" ? w.y0 : w.x0;
   const t1 = ax === "x" ? w.y1 : w.x1;
   const tm = (t0 + t1) / 2;
-  const top = Math.min(o.head, height);
-  const clipped = o.head > height + 1e-3; // parede cortada (maquete): sem verga/travessa de cima
+  // janelas aparecem inteiras mesmo com as paredes cortadas (maquete), senão sobra só uma faixa
+  void height;
+  const top = o.head;
+  const clipped = false;
   const fr = 0.04; // marco
   const els: React.ReactNode[] = [];
   // peitoril de granito (janelas) — sobressai 2 cm de cada lado
@@ -86,7 +125,7 @@ function WindowModel({ w, o, height }: { w: Wall; o: Opening; height: number }) 
       <group key="max" position={[cx, z1, -cy]} rotation={rot}>
         <mesh position={[0, -hgt / 2, 0]} castShadow>
           <boxGeometry args={ax === "x" ? [span, hgt, 0.025] : [0.025, hgt, span]} />
-          <meshPhysicalMaterial {...GLASS} opacity={0.45} color="#e9f3f6" />
+          <meshStandardMaterial {...GLASS} />
         </mesh>
       </group>,
     );
