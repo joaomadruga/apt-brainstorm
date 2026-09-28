@@ -3,6 +3,7 @@
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { renderUncut } from "@/lib/wallClip";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { snapTo } from "@/lib/geometry";
 import {
@@ -15,6 +16,7 @@ import {
   pipRect,
   planDir,
   registerShoot,
+  selectPhotoCam,
   takePhoto,
   usePhoto,
 } from "@/lib/photo";
@@ -70,10 +72,14 @@ function Marker() {
   const off = useRef({ dx: 0, dy: 0 });
   const move = useFloorDrag((x, y, first) => {
     const c = usePhoto.getState().cam!;
-    if (first) off.current = { dx: c.x - x, dy: c.y - y };
+    if (first) {
+      off.current = { dx: c.x - x, dy: c.y - y };
+      selectPhotoCam();
+    }
     else place(x + off.current.dx, y + off.current.dy);
   });
-  const aim = useFloorDrag((x, y) => aimAt(x, y));
+  const aim = useFloorDrag((x, y, first) => (first ? selectPhotoCam() : aimAt(x, y)));
+  const selected = usePhoto((s) => s.selected);
   const [hover, setHover] = useState<"" | "body" | "aim">("");
   useEffect(() => {
     document.body.style.cursor = hover ? (hover === "aim" ? "crosshair" : "grab") : "";
@@ -111,7 +117,7 @@ function Marker() {
           </mesh>
           <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <circleGeometry args={[0.18, 32]} />
-            <meshBasicMaterial color={ORANGE} transparent opacity={0.35} depthWrite={false} />
+            <meshBasicMaterial color={ORANGE} transparent opacity={selected ? 0.7 : 0.35} depthWrite={false} />
           </mesh>
           <group position={[0, cam.h, 0]} rotation={[0, 0, pitch]}>
             <mesh>
@@ -195,7 +201,7 @@ export function PhotoCamera3D() {
     gl.setScissorTest(true);
     gl.setViewport(x, y, r.w, r.h);
     gl.setScissor(x, y, r.w, r.h);
-    gl.render(scene, photoCam);
+    renderUncut(gl, scene, photoCam);
     gl.setScissorTest(false);
     gl.setViewport(0, 0, size.width, size.height);
   }, 1);
@@ -215,7 +221,7 @@ export function PhotoCamera3D() {
       gl.setPixelRatio(1);
       gl.setSize(w, h, false);
       gl.setScissorTest(false);
-      gl.render(scene, photoCam);
+      renderUncut(gl, scene, photoCam);
       const url = gl.domElement.toDataURL("image/png");
       gl.setPixelRatio(ratio);
       gl.setSize(css.x, css.y, false);
@@ -250,6 +256,7 @@ export function PhotoOverlay() {
   const placing = usePhoto((s) => s.placing);
   const busy = usePhoto((s) => s.busy);
   const setPreview = usePhoto((s) => s.setPreview);
+  const clear = usePhoto((s) => s.clear);
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
@@ -267,7 +274,10 @@ export function PhotoOverlay() {
         <div className="photo-pip" style={{ width: r.w, height: r.h, left: r.margin, bottom: r.margin }}>
           <div className="photo-pip-bar">
             <span>📷 {cam.lens} mm · {cam.aspect} · {cam.h.toFixed(2).replace(".", ",")} m</span>
-            <button className="icon" onClick={() => setPreview(false)} title="Esconder prévia">✕</button>
+            <span>
+              <button className="icon" onClick={clear} title="Remover câmera (ou selecione e aperte Delete)">🗑</button>
+              <button className="icon" onClick={() => setPreview(false)} title="Esconder prévia">✕</button>
+            </span>
           </div>
           <button className="primary photo-shoot" disabled={busy} onClick={() => takePhoto()} title="Tirar foto (F)">
             {busy ? "…" : "📸 Tirar foto"}

@@ -1,31 +1,31 @@
 {
-  "id": "sofa-para-varanda",
-  "name": "Sofá virado para a varanda",
-  "description": "Inverte o estar: sofá encostado na parede do BWC, olhando para a varanda e a luz; a TV vai para uma parede curta nova (1,30 m) na linha da antiga porta da varanda — a parede discreta da TV. Varanda continua integrada pelos dois lados da parede.",
-  "updatedAt": "2026-09-28T01:32:48.791Z",
+  "id": "estar-na-varanda",
+  "name": "Estar na varanda",
+  "description": "Mesma paleta da \"Jantar em canto alemão\". Escritório encurtado até a linha do BWC (2,48 × 1,68 m, divisória camarão de 2,60 m na frente); a faixa liberada + a varanda envidraçada viram o estar: sofá de 1,90 m de costas para o escritório, TV num painel de nogueira no fundo da varanda (esconde também a área de serviço). Jantar no lugar da antiga sala, mesa 1,80 m paralela à bancada com banco do lado da cozinha. Antigo jantar vira canto de leitura na janela. Cozinha deslocada 0,52 m para oeste (geladeira na ponta oeste, torre de forno ao lado do cooktop, lava-louças ao lado da cuba); área de serviço maior, fechada em L por ripado de nogueira piso-teto (folha de correr na frente da cozinha) — a TV do estar fica inteira na frente dele.",
+  "updatedAt": "2026-09-27T20:00:00Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
       "type": "bancada",
       "rot": 0,
-      "x": 4.545,
+      "x": 4.025,
       "y": 7.271,
       "w": 2.51,
       "d": 0.602,
       "h": 0.9,
-      "color": "#4a3a2a",
+      "color": "#3a2a1f",
       "fixed": true
     },
     {
       "id": "fx-geladeira-5.82-6.93",
       "type": "geladeira",
       "rot": 0,
-      "x": 6.1,
+      "x": 2.49,
       "y": 7.245,
       "w": 0.56,
       "d": 0.63,
       "h": 1.8,
-      "color": "#d7dadd",
+      "color": "#3a2a1f",
       "fixed": true
     },
     {
@@ -113,136 +113,15 @@
       "fixed": true
     },
     {
-      "id": "banco-jantar",
-      "type": "banco",
-      "x": 1.5,
-      "y": 5.39,
-      "rot": 180,
-      "w": 1.6,
-      "d": 0.35,
-      "h": 0.45,
-      "color": "#5a4326"
-    },
-    {
-      "id": "mesa-jantar",
-      "type": "mesaJantar",
-      "x": 1.5,
-      "y": 5.925,
-      "rot": 0,
-      "w": 1.8,
-      "d": 0.85,
-      "h": 0.76,
-      "color": "#5a4326"
-    },
-    {
-      "id": "cadeira-1",
-      "type": "cadeira",
-      "x": 0.9,
-      "y": 6.45,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#8b6a4f"
-    },
-    {
-      "id": "cadeira-2",
-      "type": "cadeira",
-      "x": 1.5,
-      "y": 6.45,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#8b6a4f"
-    },
-    {
-      "id": "cadeira-3",
-      "type": "cadeira",
-      "x": 2.1,
-      "y": 6.45,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#8b6a4f"
-    },
-    {
-      "id": "pendente-jantar",
-      "type": "pendente",
-      "x": 1.5,
-      "y": 5.925,
-      "rot": 0,
-      "w": 0.55,
-      "d": 0.55,
-      "h": 2.6,
-      "color": "#f1dcb0"
-    },
-    {
-      "id": "painel-tv",
-      "type": "painel-tv",
-      "x": 5.476,
-      "y": 4.6,
-      "rot": 270,
-      "w": 1.286,
-      "d": 0.35,
-      "h": 2.6,
-      "color": "#5a4326"
-    },
-    {
-      "id": "sofa-teddy",
-      "type": "sofa-teddy",
-      "x": 3.44,
-      "y": 4.6,
-      "rot": 90,
-      "w": 2,
-      "d": 0.95,
-      "h": 0.75,
-      "color": "#6f7442"
-    },
-    {
-      "id": "tapete-sala",
-      "type": "tapete-listrado",
-      "x": 4.5,
-      "y": 4.6,
-      "rot": 90,
-      "w": 2,
-      "d": 1.6,
-      "h": 0.01,
-      "color": "#e9e3d3"
-    },
-    {
-      "id": "pendente-sala",
-      "type": "pendente",
-      "x": 4.5,
-      "y": 4.6,
-      "rot": 0,
-      "w": 0.5,
-      "d": 0.5,
-      "h": 2.6,
-      "color": "#e9a25a"
-    },
-    {
       "id": "portal-escritorio-norte",
       "type": "portal-madeira",
       "x": 5.841,
-      "y": 3.391,
+      "y": 2.486,
       "rot": 0,
       "w": 2.6,
       "d": 0.11,
       "h": 2.6,
-      "color": "#c9a57a"
-    },
-    {
-      "id": "portal-escritorio-oeste",
-      "type": "portal-madeira",
-      "x": 4.604,
-      "y": 2.886,
-      "rot": 90,
-      "w": 0.9,
-      "d": 0.125,
-      "h": 2.6,
-      "color": "#c9a57a"
+      "color": "#6b4a30"
     },
     {
       "id": "mesa-escritorio",
@@ -253,7 +132,7 @@
       "w": 2.36,
       "d": 0.6,
       "h": 0.75,
-      "color": "#46769a"
+      "color": "#5b3a26"
     },
     {
       "id": "cadeira-escritorio",
@@ -264,7 +143,7 @@
       "w": 0.45,
       "d": 0.5,
       "h": 0.85,
-      "color": "#8b6a4f"
+      "color": "#6e4a30"
     },
     {
       "id": "cama-suite",
@@ -275,7 +154,7 @@
       "w": 1.6,
       "d": 2,
       "h": 0.55,
-      "color": "#d8d2c6"
+      "color": "#d8cbb6"
     },
     {
       "id": "criado-suite",
@@ -286,7 +165,7 @@
       "w": 0.45,
       "d": 0.4,
       "h": 0.5,
-      "color": "#5a4326"
+      "color": "#5b3a26"
     },
     {
       "id": "guarda-roupa-suite",
@@ -297,29 +176,18 @@
       "w": 1.6,
       "d": 0.52,
       "h": 2.4,
-      "color": "#bfae95"
+      "color": "#3a2a1f"
     },
     {
       "id": "divisoria-norte",
       "type": "divisoria",
       "x": 5.841,
-      "y": 3.391,
+      "y": 2.486,
       "rot": 0,
       "w": 2.6,
       "d": 0.1,
       "h": 2.1,
-      "color": "#c9a57a"
-    },
-    {
-      "id": "divisoria-oeste",
-      "type": "divisoria",
-      "x": 4.604,
-      "y": 2.886,
-      "rot": 270,
-      "w": 0.9,
-      "d": 0.1,
-      "h": 2.1,
-      "color": "#c9a57a"
+      "color": "#6b4a30"
     },
     {
       "id": "maquina-lavar",
@@ -335,24 +203,24 @@
     {
       "id": "armario-aereo",
       "type": "armario-aereo",
-      "x": 4.545,
+      "x": 4.025,
       "y": 7.397,
       "rot": 0,
       "w": 2.51,
       "d": 0.35,
       "h": 2.6,
-      "color": "#4a3a2a"
+      "color": "#3a2a1f"
     },
     {
       "id": "torre-forno",
       "type": "torre-forno",
-      "x": 3.038,
+      "x": 5.53,
       "y": 7.272,
       "rot": 0,
       "w": 0.5,
       "d": 0.6,
       "h": 2.3,
-      "color": "#4a3a2a"
+      "color": "#3a2a1f"
     },
     {
       "id": "varal-servico",
@@ -364,6 +232,171 @@
       "d": 0.5,
       "h": 2.6,
       "color": "#d9d9d6"
+    },
+    {
+      "id": "lava-loucas",
+      "type": "lava-loucas",
+      "x": 3.6,
+      "y": 7.251,
+      "rot": 0,
+      "w": 0.6,
+      "d": 0.6,
+      "h": 0.9,
+      "color": "#a9adb1"
+    },
+    {
+      "id": "mesa-jantar",
+      "type": "mesaJantar",
+      "x": 4.35,
+      "y": 5.35,
+      "rot": 0,
+      "w": 1.8,
+      "d": 0.9,
+      "h": 0.76,
+      "color": "#4e3222"
+    },
+    {
+      "id": "banco-jantar",
+      "type": "banco",
+      "x": 4.35,
+      "y": 6.02,
+      "rot": 0,
+      "w": 1.6,
+      "d": 0.35,
+      "h": 0.45,
+      "color": "#5b3a26"
+    },
+    {
+      "id": "cadeira-1",
+      "type": "cadeira",
+      "x": 3.8,
+      "y": 4.6,
+      "rot": 180,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#6e4a30"
+    },
+    {
+      "id": "cadeira-2",
+      "type": "cadeira",
+      "x": 4.35,
+      "y": 4.6,
+      "rot": 180,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#6e4a30"
+    },
+    {
+      "id": "cadeira-3",
+      "type": "cadeira",
+      "x": 4.9,
+      "y": 4.6,
+      "rot": 180,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#6e4a30"
+    },
+    {
+      "id": "pendente-jantar",
+      "type": "pendente",
+      "x": 4.35,
+      "y": 5.35,
+      "rot": 0,
+      "w": 0.75,
+      "d": 0.75,
+      "h": 2.6,
+      "color": "#f3e3c3"
+    },
+    {
+      "id": "sofa-verde",
+      "type": "sofa-teddy",
+      "x": 6.19,
+      "y": 3.015,
+      "rot": 180,
+      "w": 1.9,
+      "d": 0.95,
+      "h": 0.75,
+      "color": "#3f4a35"
+    },
+    {
+      "id": "painel-tv",
+      "type": "painel-tv",
+      "x": 6.476,
+      "y": 5.817,
+      "rot": 0,
+      "w": 1.29,
+      "d": 0.35,
+      "h": 2.6,
+      "color": "#5b3a26"
+    },
+    {
+      "id": "tapete-sala",
+      "type": "tapete",
+      "x": 6.3,
+      "y": 4.15,
+      "rot": 0,
+      "w": 2,
+      "d": 1.4,
+      "h": 0.01,
+      "color": "#77716a"
+    },
+    {
+      "id": "mesa-centro",
+      "type": "mesa-lateral",
+      "x": 6.3,
+      "y": 4.1,
+      "rot": 0,
+      "w": 0.7,
+      "d": 0.7,
+      "h": 0.38,
+      "color": "#d9cfc0"
+    },
+    {
+      "id": "pendente-sala",
+      "type": "pendente",
+      "x": 6.3,
+      "y": 4.1,
+      "rot": 0,
+      "w": 0.5,
+      "d": 0.5,
+      "h": 2.6,
+      "color": "#ee9a45"
+    },
+    {
+      "id": "ripado-servico-sul",
+      "type": "ripado-nogueira",
+      "d": 0.06,
+      "h": 2.6,
+      "color": "#5b3a26",
+      "rot": 0,
+      "x": 6.463,
+      "y": 6.02,
+      "w": 1.326
+    },
+    {
+      "id": "ripado-servico-fixo",
+      "type": "ripado-nogueira",
+      "d": 0.06,
+      "h": 2.6,
+      "color": "#5b3a26",
+      "rot": 90,
+      "x": 5.82,
+      "y": 6.4,
+      "w": 0.71
+    },
+    {
+      "id": "ripado-servico-correr",
+      "type": "ripado-nogueira",
+      "d": 0.06,
+      "h": 2.6,
+      "color": "#5b3a26",
+      "rot": 90,
+      "x": 5.88,
+      "y": 7.14,
+      "w": 0.86
     }
   ],
   "removedWalls": [
@@ -374,20 +407,18 @@
     "varanda-quarto"
   ],
   "floors": {
-    "hall": "carvalho",
-    "circ": "carvalho",
-    "suite": "carvalho",
-    "sala": "carvalho",
-    "varanda": "carvalho",
-    "quarto": "carvalho",
-    "jantar": "carvalho"
+    "hall": "espinha",
+    "cozinha": "espinha",
+    "sala": "espinha",
+    "varanda": "espinha",
+    "circ": "espinha",
+    "suite": "espinha",
+    "quarto": "espinha",
+    "jantar": "espinha"
   },
-  "wallColor": "#d0d5de",
+  "wallColor": "#e6ddcf",
   "wallColors": {
-    "fachada-sul-escritorio": "#46769a",
-    "bwc-quarto": "#46769a",
-    "fachada-leste-quarto": "#46769a",
-    "parede-tv": "#5a4326"
+    "bwc-sala": "#5b3a26"
   },
   "extraWalls": [
     {
@@ -456,21 +487,30 @@
       "height": 2.6
     },
     {
-      "id": "parede-tv",
-      "name": "Parede da TV (drywall, entre sala e varanda)",
-      "kind": "int",
-      "x0": 5.651,
-      "y0": 3.95,
-      "x1": 5.761,
-      "y1": 5.25,
-      "height": 2.6
+      "id": "guarda-varanda",
+      "name": "Fechamento de vidro da varanda (correr, piso ao teto)",
+      "kind": "ext",
+      "x0": 7.126,
+      "y0": 3.461,
+      "x1": 7.291,
+      "y1": 5.906,
+      "openings": [
+        {
+          "kind": "slider",
+          "label": "EV",
+          "a0": 3.481,
+          "a1": 5.886,
+          "sill": 0,
+          "head": 2.5
+        }
+      ]
     }
   ],
   "rooms": [
     {
       "id": "cozinha",
       "name": "Cozinha / Serviço",
-      "floor": "ladrilho",
+      "floor": "espinha",
       "label": [
         4.3,
         6.5
@@ -520,8 +560,8 @@
     },
     {
       "id": "sala",
-      "name": "Sala",
-      "floor": "carvalho",
+      "name": "Jantar",
+      "floor": "espinha",
       "label": [
         3.7,
         5.6
@@ -555,20 +595,20 @@
     },
     {
       "id": "varanda",
-      "name": "Varanda",
-      "floor": "carvalho",
+      "name": "Estar",
+      "floor": "espinha",
       "label": [
-        6.47,
-        5.2
+        6.45,
+        4.6
       ],
       "poly": [
         [
-          5.826,
-          3.336
+          4.541,
+          2.436
         ],
         [
           7.141,
-          3.336
+          2.436
         ],
         [
           7.141,
@@ -585,16 +625,24 @@
         [
           5.826,
           5.931
+        ],
+        [
+          5.826,
+          3.336
+        ],
+        [
+          4.541,
+          3.336
         ]
       ]
     },
     {
       "id": "quarto",
       "name": "Escritório",
-      "floor": "carvalho",
+      "floor": "espinha",
       "label": [
         5.9,
-        2.1
+        1.6
       ],
       "poly": [
         [
@@ -615,14 +663,6 @@
         ],
         [
           7.141,
-          3.336
-        ],
-        [
-          4.541,
-          3.336
-        ],
-        [
-          4.541,
           2.436
         ],
         [
@@ -633,8 +673,8 @@
     },
     {
       "id": "jantar",
-      "name": "Jantar",
-      "floor": "carvalho",
+      "name": "Leitura",
+      "floor": "espinha",
       "label": [
         1.5,
         7.1
@@ -658,6 +698,5 @@
         ]
       ]
     }
-  ],
-  "author": "joao"
+  ]
 }

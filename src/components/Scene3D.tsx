@@ -2,18 +2,20 @@
 
 import { Canvas, useThree, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Edges } from "@react-three/drei";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { CEILING, bounds, center, type Room, type Wall } from "@/data/apartment";
+import { CEILING, bounds, center, wallAxis, type Room, type Wall } from "@/data/apartment";
 import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
 import { usePlan, useStore } from "@/lib/store";
+import { pointInPoly } from "@/lib/plan";
+import { registerCutOnly, registerWallPlane } from "@/lib/wallClip";
 import { usePlanColors } from "@/lib/theme";
 import { FurnitureMesh } from "./Furniture3D";
 import { Openings3D } from "./Openings3D";
 import { OnLayer } from "./OnLayer";
 import { PhotoCamera3D, PhotoOverlay } from "./PhotoCamera3D";
-import { LAYER_EDITOR, LAYER_PHOTO } from "@/lib/photo";
+import { LAYER_EDITOR, LAYER_PHOTO, usePhoto } from "@/lib/photo";
 import { analyzeFrame } from "@/lib/photoPrompt";
 import { floorFinishes } from "@/lib/materials";
 import { floorTexture } from "@/lib/floorTextures";
@@ -21,52 +23,156 @@ import type { Item } from "@/data/catalog";
 import { registerCapture } from "@/lib/capture";
 
 const CUT_H = 1.25; // altura das paredes no modo "maquete"
+const LOW_H = 0.32; // parede entre a câmera e o apê, com as paredes automáticas
+const CAP_T = 0.012; // espessura da "tampa" escura no topo da parede cortada
 const toW = (x: number, y: number, z = 0) => new THREE.Vector3(x, z, -y);
 
 // ---------------------------------------------------------------- walls
-function WallMesh({ w, height, edge }: { w: Wall; height: number; edge: string }) {
+// Paredes cortadas = plano de corte horizontal por parede (material.clippingPlanes), animado a cada
+// frame — a geometria é sempre a parede inteira. Com "paredes automáticas" (como no construct.aswinnair.com):
+// fachada virada para a câmera desce até LOW_H, internas ficam em CUT_H, fachadas do fundo ficam inteiras.
+// A foto renderiza sem corte (renderUncut em lib/wallClip) e vê a parede inteira.
+
+/** lado de fora (em planta) de uma parede que tem cômodo só de um lado; null = interna */
+function outwardOf(w: Wall, rooms: Room[]): [number, number] | null {
+  const ax = wallAxis(w);
+  const inside = (x: number, y: number) => rooms.some((r) => pointInPoly(x, y, r.poly));
+  let plus = 0, minus = 0;
+  for (const f of [0.2, 0.5, 0.8]) {
+    if (ax === "x") {
+      const x = w.x0 + (w.x1 - w.x0) * f;
+      plus += +inside(x, w.y1 + 0.15);
+      minus += +inside(x, w.y0 - 0.15);
+    } else {
+      const y = w.y0 + (w.y1 - w.y0) * f;
+      plus += +inside(w.x1 + 0.15, y);
+      minus += +inside(w.x0 - 0.15, y);
+    }
+  }
+  const n: [number, number] = ax === "x" ? [0, 1] : [1, 0];
+  if (plus && !minus) return [-n[0], -n[1]];
+  if (minus && !plus) return n;
+  if (plus || minus) return null;
+  // nenhum lado num cômodo (pilar solto na fachada): aponta para fora do centro do apê
+  const dx = (w.x0 + w.x1) / 2 - center[0], dy = (w.y0 + w.y1) / 2 - center[1];
+  const l = Math.hypot(dx, dy) || 1;
+  return [dx / l, dy / l];
+}
+
+/** altura alvo da parede para esta câmera */
+function wallTarget(w: Wall, outward: [number, number] | null, cam: THREE.Vector3, cutaway: boolean, auto: boolean) {
+  const full = w.height ?? CEILING;
+  if (!cutaway) return full;
+  if (!auto) return w.height ?? CUT_H;
+  // câmera "em pé" dentro do apê: tudo inteiro
+  const cx = cam.x, cy = -cam.z;
+  if (cam.y < CEILING && cx > bounds.minX && cx < bounds.maxX && cy > bounds.minY && cy < bounds.maxY) return full;
+  if (!outward) return w.height ?? CUT_H;
+  const dx = cx - (w.x0 + w.x1) / 2, dy = cy - (w.y0 + w.y1) / 2;
+  const l = Math.hypot(dx, dy) || 1;
+  return (outward[0] * dx + outward[1] * dy) / l > 0.2 ? LOW_H : full;
+}
+
+/** raycast que ignora o que está acima do corte — a não ser para a foto, que vê a parede inteira */
+function clippedRaycast(plane: THREE.Plane) {
+  return function (this: THREE.Mesh, rc: THREE.Raycaster, hits: THREE.Intersection[]) {
+    const n = hits.length;
+    THREE.Mesh.prototype.raycast.call(this, rc, hits);
+    if (rc.layers.isEnabled(LAYER_PHOTO)) return;
+    for (let i = hits.length - 1; i >= n; i--) if (hits[i].point.y > plane.constant + 1e-3) hits.splice(i, 1);
+  };
+}
+
+const noRaycast = () => null;
+
+function WallMesh({ w, outward, edge }: { w: Wall; outward: [number, number] | null; edge: string }) {
   const selection = useStore((s) => s.selection);
   const select = useStore((s) => s.select);
   const baseColor = useStore((s) => s.wallColors[w.id] ?? s.wallColor);
   const sel = selection?.kind === "wall" && selection.id === w.id;
-  const pieces = useMemo(() => (w.kind === "parapet" ? [] : wallPieces(w, height)), [w, height]);
+  const pieces = useMemo(() => (w.kind === "parapet" ? [] : wallPieces(w, CEILING)), [w]);
   const color = w.kind === "pillar" ? "#d9d4cc" : w.kind === "parapet" ? "#e8e6e1" : baseColor;
   const onClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     select({ kind: "wall", id: w.id });
   };
-  const H = w.height ?? height;
-  // com a maquete cortada, a foto (camada LAYER_PHOTO) ainda vê a parede inteira
-  const upper = useMemo(
-    () =>
-      w.kind === "parapet" || height >= CEILING
-        ? []
-        : wallPieces(w, CEILING)
-            .filter((p) => p.z1 > H + 1e-3)
-            .map((p) => ({ ...p, z0: Math.max(p.z0, H) })),
-    [w, height, H],
-  );
+  // corte da parede (e das portas) e das janelas — janelas só cortam quando a parede desce abaixo de CUT_H,
+  // senão na maquete sobrava só uma faixa delas
+  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), CEILING), []);
+  const winPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 100), []);
+  const planes = useMemo(() => [plane], [plane]);
+  const raycast = useMemo(() => clippedRaycast(plane), [plane]);
+  const winRaycast = useMemo(() => clippedRaycast(winPlane), [winPlane]);
+  useEffect(() => {
+    const a = registerWallPlane(plane), b = registerWallPlane(winPlane);
+    return () => (a(), b());
+  }, [plane, winPlane]);
+  const caps = useRef<(THREE.Mesh | null)[]>([]);
+  const openings = useRef<THREE.Group>(null);
+  const cur = useRef<number | null>(null);
+
+  // esquadrias: põe o corte em todos os materiais (portas = corte da parede, janelas = winPlane)
+  useLayoutEffect(() => {
+    openings.current?.children.forEach((g, i) => {
+      const win = w.openings?.[i]?.kind !== "door";
+      g.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.raycast = win ? winRaycast : raycast;
+        for (const mat of Array.isArray(m.material) ? m.material : [m.material]) mat.clippingPlanes = [win ? winPlane : plane];
+      });
+    });
+  });
+
+  useFrame(({ camera }, dt) => {
+    const { cutaway, autoWalls } = useStore.getState();
+    const target = wallTarget(w, outward, camera.position, cutaway, autoWalls);
+    cur.current = cur.current === null ? target : THREE.MathUtils.damp(cur.current, target, 7, Math.min(dt, 0.1));
+    if (Math.abs(cur.current - target) < 1e-4) cur.current = target;
+    const T = cur.current;
+    // parede inteira = sem corte (plano na face de cima dela faz a face piscar)
+    const whole = T >= (w.height ?? CEILING) - 1e-3;
+    plane.constant = whole ? 100 : T;
+    winPlane.constant = !whole && T < CUT_H - 0.01 ? T : 100;
+    pieces.forEach((p, i) => {
+      const c = caps.current[i];
+      if (!c) return;
+      c.visible = T > p.z0 + 0.002 && T < p.z1 - 0.002;
+      c.position.y = T - CAP_T / 2;
+    });
+  });
+
   return (
     <group onClick={onClick} userData={{ tag: { kind: "wall", id: w.id } }}>
-      {upper.length > 0 && (
-        <OnLayer layer={LAYER_PHOTO}>
-          {upper.map((p, i) => (
-            <mesh key={i} position={toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2)} receiveShadow>
-              <boxGeometry args={[p.x1 - p.x0, p.z1 - p.z0, p.y1 - p.y0]} />
-              <meshStandardMaterial color={color} roughness={0.92} />
+      {pieces.map((p, i) => {
+        const pos = toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2);
+        const sx = p.x1 - p.x0, sz = p.y1 - p.y0;
+        return (
+          <group key={i}>
+            <mesh position={pos} raycast={raycast} castShadow receiveShadow>
+              <boxGeometry args={[sx, p.z1 - p.z0, sz]} />
+              <meshStandardMaterial color={sel ? "#ff8a3d" : color} roughness={0.92} clippingPlanes={planes} />
             </mesh>
-          ))}
-        </OnLayer>
-      )}
-      {pieces.map((p, i) => (
-        <mesh key={i} position={toW((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, (p.z0 + p.z1) / 2)} castShadow receiveShadow>
-          <boxGeometry args={[p.x1 - p.x0, p.z1 - p.z0, p.y1 - p.y0]} />
-          <meshStandardMaterial color={sel ? "#ff8a3d" : color} roughness={0.92} />
-          {p.z1 >= H - 1e-3 && height < CEILING && <Edges color={edge} threshold={15} />}
-        </mesh>
-      ))}
+            {/* tampa no topo do corte — 1 mm maior que a parede de cada lado (senão briga com ela e pisca); some na foto */}
+            <mesh
+              ref={(m) => {
+                caps.current[i] = m;
+                if (m) return registerCutOnly(m);
+              }}
+              position={[pos.x, 0, pos.z]}
+              visible={false}
+              raycast={noRaycast}
+            >
+              <boxGeometry args={[sx + 0.002, CAP_T, sz + 0.002]} />
+              <meshStandardMaterial color={sel ? "#c85a14" : edge} roughness={0.9} />
+            </mesh>
+          </group>
+        );
+      })}
       {/* janelas, portas de correr e portas de giro */}
-      <Openings3D w={w} height={height} />
+      <group ref={openings}>
+        <Openings3D w={w} height={CEILING} />
+      </group>
       {w.kind === "parapet" && (
         <>
           <mesh position={toW((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, 1.08)} castShadow>
@@ -438,7 +544,7 @@ function World() {
   const C = usePlanColors();
   const items = useStore((s) => s.items);
   const select = useStore((s) => s.select);
-  const height = cutaway ? CUT_H : CEILING;
+  const outward = useMemo(() => new Map(walls.map((w) => [w.id, outwardOf(w, rooms)])), [walls, rooms]);
   return (
     <group onPointerMissed={() => select(null)}>
       <Plinth color={C.plinth} />
@@ -446,7 +552,7 @@ function World() {
       {walls
         .filter((w) => !removed.includes(w.id))
         .map((w) => (
-          <WallMesh key={w.id} w={w} height={height} edge={C.edge} />
+          <WallMesh key={w.id} w={w} outward={outward.get(w.id) ?? null} edge={C.edge} />
         ))}
       {items.map((i) => (
         <ItemMesh key={i.id} item={i} />
@@ -476,7 +582,13 @@ export default function Scene3D() {
       dpr={[1, 2]}
       gl={{ preserveDrawingBuffer: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       camera={{ position: TARGET.clone().add(ISO_OFFSET).toArray(), fov: 40, near: 0.05, far: 200 }}
-      onPointerMissed={() => select(null)}
+      onPointerMissed={() => {
+        select(null);
+        usePhoto.getState().setSelected(false);
+      }}
+      onCreated={({ gl }) => {
+        gl.localClippingEnabled = true; // corte das paredes (WallMesh)
+      }}
     >
       <Background />
       <Sun />

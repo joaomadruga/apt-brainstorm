@@ -36,6 +36,9 @@ interface PhotoState {
   /** última foto tirada (abre o preview) */
   shot: CaptureResult | null;
   busy: boolean;
+  /** marcador selecionado (Delete remove) */
+  selected: boolean;
+  setSelected: (v: boolean) => void;
   place: (x: number, y: number) => void;
   aimAt: (x: number, y: number) => void;
   update: (p: Partial<PhotoCam>) => void;
@@ -55,6 +58,8 @@ export const usePhoto = create<PhotoState>()(
       preview: true,
       shot: null,
       busy: false,
+      selected: false,
+      setSelected: (selected) => set({ selected }),
       place: (x, y) =>
         set((s) => ({
           cam: s.cam ? { ...s.cam, x, y } : { x, y, h: EYE_H, yaw: 90, pitch: -3, lens: 24, aspect: "3:2" },
@@ -67,12 +72,22 @@ export const usePhoto = create<PhotoState>()(
       update: (p) => set((s) => (s.cam ? { cam: { ...s.cam, ...p } } : s)),
       setPlacing: (placing) => set({ placing }),
       setPreview: (preview) => set({ preview }),
-      clear: () => set({ cam: null, placing: false }),
+      clear: () => set({ cam: null, placing: false, selected: false }),
       setShot: (shot) => set({ shot }),
     }),
     { name: "apto-1707-photo", partialize: (s) => ({ cam: s.cam, preview: s.preview }) },
   ),
 );
+
+useStore.subscribe((s, p) => {
+  if (s.selection && s.selection !== p.selection) usePhoto.getState().setSelected(false);
+});
+
+/** seleciona o marcador da câmera (desmarca o que estava selecionado no editor) */
+export function selectPhotoCam() {
+  if (useStore.getState().selection) useStore.getState().select(null);
+  usePhoto.getState().setSelected(true);
+}
 
 export const aspectRatio = (a: Aspect) => {
   const [w, h] = a.split(":").map(Number);

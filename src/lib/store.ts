@@ -37,6 +37,8 @@ interface State extends Snapshot {
   view: ViewMode;
   selection: Selection;
   cutaway: boolean;
+  /** com as paredes cortadas: as que ficam entre a câmera e o apê abaixam sozinhas (ver WallMesh) */
+  autoWalls: boolean;
   showCeiling: boolean;
   hour: number;
   snap: boolean;
@@ -58,6 +60,7 @@ interface State extends Snapshot {
   setView: (v: ViewMode) => void;
   select: (s: Selection) => void;
   setCutaway: (v: boolean) => void;
+  setAutoWalls: (v: boolean) => void;
   setShowCeiling: (v: boolean) => void;
   setHour: (h: number) => void;
   setSnap: (v: boolean) => void;
@@ -169,6 +172,7 @@ export const useStore = create<State>()(
       view: "split",
       selection: null,
       cutaway: true,
+      autoWalls: true,
       showCeiling: false,
       hour: 10,
       snap: true,
@@ -186,6 +190,7 @@ export const useStore = create<State>()(
       setView: (view) => set({ view }),
       select: (selection) => set({ selection }),
       setCutaway: (cutaway) => set({ cutaway }),
+      setAutoWalls: (autoWalls) => set({ autoWalls }),
       setShowCeiling: (showCeiling) => set({ showCeiling }),
       setHour: (hour) => set({ hour }),
       setSnap: (snap) => set({ snap }),
@@ -374,7 +379,7 @@ export const useStore = create<State>()(
       partialize: (s) => ({
         ...snap(s),
         versions: s.versions, activeId: s.activeId, screen: s.screen, hiddenRepo: s.hiddenRepo,
-        view: s.view, cutaway: s.cutaway, hour: s.hour, snap: s.snap, showCeiling: s.showCeiling, theme: s.theme,
+        view: s.view, cutaway: s.cutaway, autoWalls: s.autoWalls, hour: s.hour, snap: s.snap, showCeiling: s.showCeiling, theme: s.theme,
       }),
       migrate: (persisted, from) => {
         const p = (persisted ?? {}) as Partial<State> & { versions?: Version[] };

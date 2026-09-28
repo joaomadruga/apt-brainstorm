@@ -1,0 +1,68 @@
+{
+  "type": "banco-encosto",
+  "name": "Banco fixo c/ encosto (canto alemão)",
+  "group": "Jantar",
+  "w": 1.2,
+  "d": 0.5,
+  "h": 0.85,
+  "color": "#5b3a26",
+  "prompt": "built-in walnut banquette bench with upholstered seat and back cushions",
+  "parts": [
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.2706,
+      "sy": 0.4,
+      "z": -0.04,
+      "sz": 0.92,
+      "sx": 1,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.0353,
+      "sy": 0.0706,
+      "z": -0.08,
+      "sz": 0.84,
+      "sx": 1,
+      "color": "dark",
+      "roughness": 0.6
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.5059,
+      "sy": 0.0706,
+      "z": 0.1,
+      "sz": 0.8,
+      "sx": 0.99,
+      "color": "#b28a5e",
+      "roughness": 0.95
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.7353,
+      "sy": 0.5294,
+      "z": -0.4,
+      "sz": 0.2,
+      "sx": 1,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.7412,
+      "sy": 0.3529,
+      "z": -0.22,
+      "sz": 0.16,
+      "sx": 0.97,
+      "color": "#b28a5e",
+      "roughness": 0.95,
+      "rx": -8
+    }
+  ]
+}

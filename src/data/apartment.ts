@@ -44,7 +44,7 @@ export interface Room {
   floor: FloorFinish;
 }
 
-export type FloorFinish = "madeira" | "carvalho" | "porcelanato" | "cimento" | "ceramica" | "ladrilho" | "deck";
+export type FloorFinish = "madeira" | "carvalho" | "porcelanato" | "cimento" | "ceramica" | "ladrilho" | "deck" | "espinha";
 
 export const CEILING = 2.6; // pé-direito adotado (não consta na planta)
 

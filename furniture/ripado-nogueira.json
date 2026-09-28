@@ -1,0 +1,243 @@
+{
+  "type": "ripado-nogueira",
+  "name": "Painel ripado de nogueira (piso a teto)",
+  "group": "Cozinha",
+  "w": 1.0,
+  "d": 0.06,
+  "h": 2.6,
+  "color": "#5b3a26",
+  "prompt": "floor-to-ceiling slatted walnut wood partition with dark backing, vertical slats",
+  "parts": [
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.5,
+      "z": -0.3,
+      "sx": 0.98,
+      "sy": 0.98,
+      "sz": 0.3,
+      "color": "#1f1813",
+      "roughness": 0.9
+    },
+    {
+      "shape": "box",
+      "x": -0.4722,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.4167,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.3611,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.3056,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.25,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.1944,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.1389,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.0833,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": -0.0278,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.0278,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.0833,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.1389,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.1944,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.25,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.3056,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.3611,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.4167,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0.4722,
+      "y": 0.5,
+      "z": 0.15,
+      "sx": 0.042,
+      "sy": 0.98,
+      "sz": 0.7,
+      "color": "base",
+      "roughness": 0.55
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.01,
+      "z": 0,
+      "sx": 1,
+      "sy": 0.02,
+      "sz": 1,
+      "color": "dark",
+      "roughness": 0.6
+    },
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.99,
+      "z": 0,
+      "sx": 1,
+      "sy": 0.02,
+      "sz": 1,
+      "color": "dark",
+      "roughness": 0.6
+    }
+  ]
+}

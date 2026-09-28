@@ -79,7 +79,8 @@ details summary { cursor: pointer; padding: 3px 0; }
 .autosave { position: fixed; right: 16px; bottom: 64px; z-index: 5; max-width: min(420px, calc(100vw - 32px)); padding: 6px 10px; border-radius: 8px; font-size: 12px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
 .autosave.saved { color: var(--repo); border-color: var(--repo); background: var(--repo-bg); }
 .autosave.error { color: var(--note-ink); border-color: var(--note-line); background: var(--note-bg); }
-.partition-toggle { position: fixed; right: 16px; bottom: 16px; z-index: 5; padding: 10px 14px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
+.float-actions { position: fixed; right: 16px; bottom: 16px; z-index: 5; display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; max-width: calc(100vw - 32px); }
+.float-btn { padding: 10px 14px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 .loading { display: grid; place-items: center; height: 100%; color: var(--muted); }
 
 .modal { position: fixed; inset: 0; background: #0008; display: grid; place-items: center; z-index: 10; padding: 24px; }

@@ -68,7 +68,7 @@ Atualize `updatedAt` (ISO 8601) sempre que editar — é assim que o app percebe
 
   "items": [ /* móveis — se omitido, usa só as louças/bancadas do projeto */ ],
   "removedWalls": ["cozinha-sala"],            // ids de paredes (base ou extraWalls)
-  "floors": { "sala": "cimento" },              // madeira | carvalho | porcelanato | cimento | ceramica | ladrilho | deck
+  "floors": { "sala": "cimento" },              // madeira | carvalho | espinha | porcelanato | cimento | ceramica | ladrilho | deck
   "wallColor": "#ede3d3",                       // cor de todas as paredes
   "wallColors": { "bwc-sala": "#3f5f68" },      // cor por parede
 
@@ -129,7 +129,7 @@ Retângulo alinhado aos eixos: `x0 < x1`, `y0 < y1`. O eixo mais longo é o "com
 - `poly` = contorno do piso (face interna das paredes), sentido qualquer, sem repetir o primeiro ponto.
 - `label` = onde o nome/área aparecem. Mesmo `id` de um cômodo base → substitui (ex.: redesenhar a `suite`
   quando um closet come parte dela). O cômodo define piso, rótulo, área e "em que cômodo está a câmera" no prompt.
-- Exemplo completo: `versions/suite-ampliada.json` (paredes novas + suíte e circulação redesenhadas).
+- Exemplo completo: `versions/estar-na-varanda.json` (parede substituída, escritório e estar redesenhados).
 
 ---
 
@@ -215,8 +215,12 @@ atalhos), **Foto** (câmera fotográfica). Coisas novas entram numa dessas abas 
   bolinha = mira). Estado em `src/lib/photo.ts` (localStorage `apto-1707-photo`, **não** entra na versão).
 - Prévia ao vivo no canto inferior esquerdo do 3D (`PhotoCamera3D.tsx`, `useFrame` prioridade 1 renderiza a
   cena + a prévia com scissor). **F** ou "📸 Tirar foto" → PNG 1920 px + prompt no modal.
-- Camadas do three: `LAYER_PHOTO` (1) = só a foto vê — parte de cima das paredes quando a maquete está
-  cortada, teto, travessa das portas; `LAYER_EDITOR` (2) = só o editor vê — marcador da câmera.
+- Camadas do three: `LAYER_PHOTO` (1) = só a foto vê — teto quando a maquete está cortada;
+  `LAYER_EDITOR` (2) = só o editor vê — marcador da câmera.
+- **Paredes cortadas** = plano de corte por parede (`clippingPlanes` no `WallMesh`, animado a cada frame); a
+  geometria é sempre a parede inteira. A foto renderiza com os planos erguidos (`renderUncut` em `src/lib/wallClip.ts`) e vê tudo.
+  **Paredes automáticas** (botão no canto inferior direito, `autoWalls`): fachada virada para a câmera desce
+  a 0,32 m, internas ficam em 1,25 m, fachadas do fundo inteiras; câmera em pé dentro do apê = tudo inteiro.
 - **Prompt só do que está no quadro** (`src/lib/photoPrompt.ts`): `analyzeFrame` lança uma grade de raios
   e anota o que cada um acerta (vidro é atravessado) pelo `userData.tag` do grupo — `item`, `wall`,
   `opening`, `floor`, `ceiling`. **Mesh nova na cena precisa estar sob um grupo com `userData.tag`**, senão

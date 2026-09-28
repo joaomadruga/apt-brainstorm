@@ -7,11 +7,12 @@ import { openingRect, snapTo, wallPieces } from "@/lib/geometry";
 import { floorFinishes } from "@/lib/materials";
 import { usePlan, useStore } from "@/lib/store";
 import { usePlanColors, type PlanColors } from "@/lib/theme";
-import { aspectRatio, horizontalFov, usePhoto } from "@/lib/photo";
+import { aspectRatio, horizontalFov, selectPhotoCam, usePhoto } from "@/lib/photo";
 
 /** câmera de foto na planta: cone de visão + corpo (arrasta = move) + alça (arrasta = mira) */
 function PhotoCamMark({ onDown }: { onDown: (e: React.PointerEvent, part: "cam" | "aim") => void }) {
   const cam = usePhoto((s) => s.cam);
+  const selected = usePhoto((s) => s.selected);
   if (!cam) return null;
   const hf = (horizontalFov(cam.lens, aspectRatio(cam.aspect)) * Math.PI) / 360;
   const L = 2.4;
@@ -25,7 +26,7 @@ function PhotoCamMark({ onDown }: { onDown: (e: React.PointerEvent, part: "cam" 
       <line x1={0} y1={0} x2={aim} y2={0} stroke="#ff7a1a" strokeWidth={0.025} style={{ pointerEvents: "none" }} />
       <circle cx={aim} cy={0} r={0.09} fill="#ff7a1a" stroke="#fff" strokeWidth={0.02} style={{ cursor: "crosshair" }} onPointerDown={(e) => onDown(e, "aim")} />
       <g onPointerDown={(e) => onDown(e, "cam")} style={{ cursor: "grab" }}>
-        <circle r={0.2} fill="#ff7a1a" fillOpacity={0.25} />
+        <circle r={0.2} fill="#ff7a1a" fillOpacity={selected ? 0.45 : 0.25} stroke={selected ? "#ff7a1a" : "none"} strokeWidth={0.03} />
         <rect x={-0.1} y={-0.08} width={0.17} height={0.16} rx={0.02} fill="#2b2b2b" />
         <rect x={0.07} y={-0.05} width={0.07} height={0.1} fill="#ff7a1a" />
       </g>
@@ -213,6 +214,7 @@ export default function Plan2D() {
   const placing = usePhoto((p) => p.placing);
   const onCamDown = (e: React.PointerEvent, part: "cam" | "aim") => {
     e.stopPropagation();
+    selectPhotoCam();
     const c = usePhoto.getState().cam!;
     const p = toPlan(e);
     drag.current = part === "cam" ? { kind: "cam", dx: c.x - p.x, dy: c.y - p.y } : { kind: "aim" };
@@ -261,7 +263,10 @@ export default function Plan2D() {
   };
   const onUp = (e: React.PointerEvent) => {
     const d = drag.current;
-    if (d?.kind === "pan" && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 3) select(null);
+    if (d?.kind === "pan" && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 3) {
+      select(null);
+      usePhoto.getState().setSelected(false);
+    }
     if (d?.kind === "aim" && usePhoto.getState().placing) usePhoto.getState().setPlacing(false);
     drag.current = null;
   };

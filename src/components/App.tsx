@@ -75,12 +75,37 @@ function PartitionToggle() {
   const toggle = useStore((s) => s.togglePartitions);
   return (
     <button
-      className={`partition-toggle ${closed && has ? "on" : ""}`}
+      className={`float-btn ${closed && has ? "on" : ""}`}
       onClick={toggle}
       disabled={!has}
       title={has ? "Anima as divisórias camarão do escritório" : "Adicione o móvel \"Divisória camarão (abre/fecha)\" (grupo Escritório) nesta versão"}
     >
       {!has ? "Sem divisória nesta versão" : closed ? "Abrir escritório" : "Fechar escritório"}
+    </button>
+  );
+}
+
+/** liga/desliga as paredes que abaixam conforme o ângulo da câmera (ver WallMesh em Scene3D) */
+function WallsToggle() {
+  const on = useStore((s) => s.cutaway && s.autoWalls);
+  const setAutoWalls = useStore((s) => s.setAutoWalls);
+  const setCutaway = useStore((s) => s.setCutaway);
+  return (
+    <button
+      className={`float-btn ${on ? "on" : ""}`}
+      aria-pressed={on}
+      onClick={() => {
+        if (on) return setAutoWalls(false);
+        setCutaway(true);
+        setAutoWalls(true);
+      }}
+      title={
+        on
+          ? "As paredes viradas para a câmera abaixam ao girar a vista. Clique para deixar todas cortadas na mesma altura."
+          : "Liga as paredes automáticas: as viradas para a câmera abaixam ao girar a vista."
+      }
+    >
+      {on ? "Desligar paredes auto" : "Ligar paredes auto"}
     </button>
   );
 }
@@ -136,6 +161,12 @@ export default function App({
       if (e.key === "Escape") {
         s.select(null);
         usePhoto.getState().setPlacing(false);
+        usePhoto.getState().setSelected(false);
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && usePhoto.getState().selected) {
+        e.preventDefault();
+        usePhoto.getState().clear();
+        return;
       }
       const sel = s.selection;
       if (!sel) return;
@@ -230,7 +261,10 @@ export default function App({
           </div>
         )}
       </main>
-      <PartitionToggle />
+      <div className="float-actions">
+        {screen === "editor" && view !== "2d" && <WallsToggle />}
+        <PartitionToggle />
+      </div>
       {autosaveToast}
       {shot && <CaptureModal shot={shot} onClose={() => setShot(null)} />}
       {photoShot && !shot && <CaptureModal key={photoShot.url.length} shot={photoShot} onClose={() => usePhoto.getState().setShot(null)} />}
