@@ -89,11 +89,21 @@ details summary { cursor: pointer; padding: 3px 0; }
 .modal-side { display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
 .modal-side textarea { width: 100%; font: 12px/1.4 var(--font-geist-mono), monospace; border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; background: var(--input); color: var(--ink); }
 
+.menu-toggle { display: none; }
+.sb-status { padding: 0 14px 8px; margin-top: -4px; }
+
 @media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
-  .sidebar { max-height: 45vh; }
-  .views, .views.split { grid-template-columns: 1fr; height: 55vh; }
-  .modal-body { grid-template-columns: 1fr; }
+  .app { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); height: 100dvh; }
+  .sidebar { max-height: 70dvh; border-right: 0; border-bottom: 1px solid var(--line); }
+  .views { height: auto; min-height: 0; }
+  .views.split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .modal-body { grid-template-columns: 1fr; overflow-y: auto; }
+  /* opções recolhidas atrás do ☰ */
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; font-size: 16px; }
+  .hide-mobile { display: none; }
+  .sidebar .sb-head { padding-bottom: 8px; }
+  .sidebar:not(.open) .sb-collapse { display: none; }
+  .sidebar:not(.open) { overflow: hidden; }
 }
 
 /* ---------- versões ---------- */
@@ -141,7 +151,7 @@ select { font: inherit; padding: 5px 6px; border: 1px solid var(--line); border-
 .sb-tools { display: flex; flex-direction: column; gap: 6px; padding: 0 14px 10px; }
 .seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .seg3 button { justify-content: center; }
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 1; }
 .tabs button { border: 0; border-radius: 0; background: transparent; justify-content: center; padding: 9px 0; color: var(--muted); border-bottom: 2px solid transparent; }
 .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); background: transparent; }
 .sb-body { padding: 12px 14px 20px; }

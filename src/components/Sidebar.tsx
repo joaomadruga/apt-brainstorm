@@ -354,6 +354,8 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
   const s = useStore();
   const version = s.versions.find((v) => v.id === s.activeId);
   const [tab, setTab] = useState<Tab>("moveis");
+  // celular: opções recolhidas num menu (☰); no desktop o botão nem aparece
+  const [menuOpen, setMenuOpen] = useState(false);
   // ao selecionar algo no 2D/3D, abre a aba "Editar"
   const selKey = s.selection ? `${s.selection.kind}:${s.selection.id}` : "";
   const [lastSel, setLastSel] = useState(selKey);
@@ -377,13 +379,20 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
   const status = !version?.repo ? "Só neste navegador" : version.dirty ? "Editada · só neste navegador" : "Igual ao repo";
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
       <header className="sb-head">
         <div className="row between">
           <button className="ghost back" onClick={goVersions}>← Versões</button>
-          {!s.viewOnly && <button className="ghost small" onClick={saveAs} title="Duplicar esta versão com outro nome">⧉ Nova variação</button>}
+          {!s.viewOnly && <button className="ghost small hide-mobile" onClick={saveAs} title="Duplicar esta versão com outro nome">⧉ Nova variação</button>}
+          <button className="menu-toggle" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} title="Mostrar/esconder opções">
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
         <VersionName />
+      </header>
+
+      <div className="sb-collapse">
+        <div className="sb-status">
         {s.viewOnly ? (
           <span className="vstatus" title="No celular o app é só para ver. Para editar, abra num computador.">📱 Só visualização</span>
         ) : (
@@ -394,7 +403,7 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
           {status} ⓘ
         </span>
         )}
-      </header>
+        </div>
 
       <div className="sb-tools">
         <div className="seg3">
@@ -429,6 +438,7 @@ export default function Sidebar({ onCapture }: { onCapture: () => void }) {
         {tab === "foto" && <PhotoTab />}
       </div>
       </>)}
+      </div>
     </aside>
   );
 }
