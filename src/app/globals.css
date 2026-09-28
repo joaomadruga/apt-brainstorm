@@ -76,7 +76,7 @@ details summary { cursor: pointer; padding: 3px 0; }
 .views { display: grid; height: 100vh; min-width: 0; }
 .views.split { grid-template-columns: 1fr 1fr; }
 .pane { position: relative; min-width: 0; min-height: 0; border-left: 1px solid var(--line); }
-.partition-toggle { position: absolute; top: 12px; right: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); }
+.partition-toggle { position: fixed; right: 16px; bottom: 16px; z-index: 5; padding: 10px 14px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 .loading { display: grid; place-items: center; height: 100%; color: var(--muted); }
 
 .modal { position: fixed; inset: 0; background: #0008; display: grid; place-items: center; z-index: 10; padding: 24px; }
