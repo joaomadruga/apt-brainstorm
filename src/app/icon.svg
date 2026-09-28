@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Apto 1707: planta baixa estilizada (paredes creme, porta em giro laranja) sobre o azul da paleta -->
+  <rect width="64" height="64" rx="14" fill="#34597a"/>
+  <g fill="none" stroke="#f3efe8" stroke-width="5" stroke-linecap="square">
+    <!-- contorno do apartamento, com vão da porta de entrada à esquerda -->
+    <path d="M13 28 V13 H51 V51 H13 V42"/>
+    <!-- parede interna vertical e horizontal (com passagem) -->
+    <path d="M32 13 V30"/>
+    <path d="M32 30 H38 M46 30 H51"/>
+  </g>
+  <!-- folha da porta aberta + arco de giro -->
+  <path d="M13 28 L25 28" stroke="#ec7c3e" stroke-width="4" stroke-linecap="round"/>
+  <path d="M25 28 A12 12 0 0 1 13 40" fill="none" stroke="#ec7c3e" stroke-width="2.5" stroke-dasharray="3 3" stroke-linecap="round"/>
+</svg>
