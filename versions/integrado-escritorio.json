@@ -2,8 +2,7 @@
   "id": "integrado-escritorio",
   "name": "Integrado + escritório abre-e-fecha",
   "description": "Cozinha, sala e varanda integradas (sem cozinha-sala, sala-varanda e cozinha-varanda); quarto vira escritório com portal de madeira e painéis camarão, mesa corrida na janela. BWCs mantidos (shaft). Piso carvalho em réguas em tudo (menos banheiros), ladrilho hidráulico na cozinha/serviço; jantar separado da cozinha. Paleta: azul #46769a, oliva #767a48, cinza #d0d5de, marrom #5a4326.",
-  "author": "joao",
-  "updatedAt": "2026-09-28T01:10:06.751Z",
+  "updatedAt": "2026-09-28T01:25:48.983Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -203,25 +202,14 @@
     },
     {
       "id": "tapete-sala",
-      "type": "tapete",
+      "type": "tapete-listrado",
       "x": 4.15,
       "y": 4.6,
       "rot": 90,
       "w": 2,
       "d": 1.6,
       "h": 0.01,
-      "color": "#c9bca6"
-    },
-    {
-      "id": "mesa-centro",
-      "type": "mesaCentro",
-      "x": 4.1,
-      "y": 4.6,
-      "rot": 90,
-      "w": 0.9,
-      "d": 0.55,
-      "h": 0.4,
-      "color": "#5a4326"
+      "color": "#e9e3d3"
     },
     {
       "id": "pendente-sala",
@@ -233,50 +221,6 @@
       "d": 0.5,
       "h": 2.6,
       "color": "#e9a25a"
-    },
-    {
-      "id": "luminaria-sala",
-      "type": "luminaria",
-      "x": 5.55,
-      "y": 5.78,
-      "rot": 0,
-      "w": 0.35,
-      "d": 0.35,
-      "h": 1.6,
-      "color": "#e8dcc4"
-    },
-    {
-      "id": "poltrona-varanda",
-      "type": "poltrona",
-      "x": 6.45,
-      "y": 4.15,
-      "rot": 180,
-      "w": 0.8,
-      "d": 0.8,
-      "h": 0.8,
-      "color": "#9a5b34"
-    },
-    {
-      "id": "mesa-lateral-varanda",
-      "type": "mesa-lateral",
-      "x": 6.85,
-      "y": 4.8,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.45,
-      "h": 0.55,
-      "color": "#5a4326"
-    },
-    {
-      "id": "planta-varanda",
-      "type": "planta",
-      "x": 6.8,
-      "y": 5.55,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.45,
-      "h": 1.2,
-      "color": "#5f7a4a"
     },
     {
       "id": "portal-escritorio-norte",
@@ -292,7 +236,7 @@
     {
       "id": "portal-escritorio-oeste",
       "type": "portal-madeira",
-      "x": 4.6035,
+      "x": 4.604,
       "y": 2.886,
       "rot": 90,
       "w": 0.9,
@@ -321,39 +265,6 @@
       "d": 0.5,
       "h": 0.85,
       "color": "#8b6a4f"
-    },
-    {
-      "id": "estante-escritorio",
-      "type": "estante",
-      "x": 4.841,
-      "y": 1.78,
-      "rot": 90,
-      "w": 0.8,
-      "d": 0.35,
-      "h": 1.9,
-      "color": "#5a4326"
-    },
-    {
-      "id": "aparador-escritorio",
-      "type": "aparador",
-      "x": 6.941,
-      "y": 2.45,
-      "rot": 270,
-      "w": 1.1,
-      "d": 0.4,
-      "h": 0.8,
-      "color": "#767a48"
-    },
-    {
-      "id": "planta-escritorio",
-      "type": "planta",
-      "x": 6.8,
-      "y": 1.62,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.45,
-      "h": 1.2,
-      "color": "#5f7a4a"
     },
     {
       "id": "cama-suite",
@@ -402,7 +313,7 @@
     {
       "id": "divisoria-oeste",
       "type": "divisoria",
-      "x": 4.6035,
+      "x": 4.604,
       "y": 2.886,
       "rot": 270,
       "w": 0.9,
@@ -528,6 +439,16 @@
       "y0": 0.761,
       "x1": 4.666,
       "y1": 2.436
+    },
+    {
+      "id": "bwc-sala",
+      "name": "Parede BWC suíte / sala (parede da TV — altura inteira mesmo com paredes cortadas)",
+      "kind": "int",
+      "x0": 2.661,
+      "y0": 3.901,
+      "x1": 2.786,
+      "y1": 5.187,
+      "height": 2.6
     }
   ],
   "rooms": [

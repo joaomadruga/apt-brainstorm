@@ -1,0 +1,110 @@
+{
+  "type": "tapete-listrado",
+  "name": "Tapete listrado azul-marinho",
+  "group": "Decoração",
+  "w": 2,
+  "d": 1.6,
+  "h": 0.01,
+  "color": "#e9e3d3",
+  "parts": [
+    {
+      "shape": "box",
+      "x": 0,
+      "y": 0.45,
+      "z": 0,
+      "sx": 1,
+      "sy": 0.9,
+      "sz": 1,
+      "color": "base",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": -0.4433,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": -0.3167,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": -0.19,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": -0.0633,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": 0.0633,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": 0.19,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": 0.3167,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    },
+    {
+      "shape": "box",
+      "x": 0.4433,
+      "y": 0.95,
+      "z": 0,
+      "sx": 0.0633,
+      "sy": 0.1,
+      "sz": 0.94,
+      "color": "#1f2f4f",
+      "roughness": 1
+    }
+  ]
+}

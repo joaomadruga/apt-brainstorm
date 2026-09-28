@@ -1,24 +1,13 @@
 {
   "type": "painel-tv",
-  "name": "Painel ripado c/ TV e rack suspenso",
+  "name": "TV de parede (55\")",
   "group": "Sala",
   "w": 1.29,
   "d": 0.35,
   "h": 2.6,
-  "color": "#5a4326",
+  "color": "#0b0b0b",
   "parts": [
-    { "shape": "box", "x": 0, "y": 0.5, "z": -0.457, "sx": 1, "sy": 1, "sz": 0.086, "color": "dark", "roughness": 0.6 },
-    { "shape": "box", "x": -0.45, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": -0.35, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": -0.25, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": -0.15, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": -0.05, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0.05, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0.15, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0.25, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0.35, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0.45, "y": 0.5, "z": -0.386, "sx": 0.023, "sy": 1, "sz": 0.057, "color": "base" },
-    { "shape": "box", "x": 0, "y": 0.154, "z": 0.071, "sx": 0.95, "sy": 0.115, "sz": 0.857, "color": "#3a2c20", "roughness": 0.5 },
-    { "shape": "box", "x": 0, "y": 0.5, "z": -0.314, "sx": 0.953, "sy": 0.273, "sz": 0.086, "color": "#0b0b0b", "roughness": 0.2, "metalness": 0.3 }
+    { "shape": "box", "x": 0, "y": 0.5, "z": -0.457, "sx": 0.953, "sy": 0.273, "sz": 0.086, "color": "#0b0b0b", "roughness": 0.2, "metalness": 0.3 },
+    { "shape": "box", "x": 0, "y": 0.5, "z": -0.41, "sx": 0.937, "sy": 0.265, "sz": 0.006, "color": "#1c2430", "roughness": 0.1 }
   ]
 }
