@@ -25,6 +25,10 @@ Depois: `npm run validate` → `npm run build` → commit → push na `main`.
 - Para levar uma edição do navegador para o repo: botão **⬇ Exportar JSON** (baixa `<id>.json`) → colocar em
   `versions/` → commit. Rodando local (`npm run dev`) existe também **💾 Salvar em versions/**, que grava o
   arquivo direto no disco via `POST /api/versions` (a rota recusa fora de `NODE_ENV=development`).
+- **Rodando local, toda edição é gravada sozinha** em `versions/<id>.json` (`src/lib/autosave.ts`, ~0,6 s depois
+  de mexer; renomear também). Abrir uma versão não grava nada. Versões criadas no app ganham arquivo na
+  primeira edição (id = nome em kebab-case). Cuidado: "Resetar versão" também é uma edição e reescreve o
+  arquivo — recupere com `git checkout versions/<id>.json` se foi sem querer.
 - Quando um arquivo do repo muda, o app atualiza a versão no navegador — a menos que o usuário tenha
   alterações locais nela; aí mostra "repo atualizado · você tem alterações locais" e o botão
   **↺ Descartar alterações locais**.

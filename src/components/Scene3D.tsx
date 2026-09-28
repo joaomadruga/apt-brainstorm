@@ -218,6 +218,8 @@ function ItemMesh({ item }: { item: Item }) {
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
+      // o clique (ao soltar) não pode atravessar até o piso/parede atrás — senão troca a seleção
+      onClick={(e) => e.stopPropagation()}
     >
       <FurnitureMesh item={item} />
       {sel && (

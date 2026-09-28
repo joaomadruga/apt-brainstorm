@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { bounds, rooms as baseRooms } from "@/data/apartment";
-import { slugify, snapshotToFile, type VersionFile } from "@/lib/files";
+import type { VersionFile } from "@/lib/files";
 import { wallPieces } from "@/lib/geometry";
 import { floorFinishes } from "@/lib/materials";
 import { resolvePlan } from "@/lib/plan";
-import { originalSnapshot, useStore, type Snapshot, type Version } from "@/lib/store";
+import { originalSnapshot, useStore, versionToFile, type Snapshot, type Version } from "@/lib/store";
 import { usePlanColors } from "@/lib/theme";
 
 /** Mini planta estática (sempre fiel ao conteúdo da versão) */
@@ -71,16 +71,6 @@ function diffSummary(v: Version) {
   return parts.length ? parts.join(" · ") : "Sem mudanças";
 }
 
-function toFile(v: Version, taken: Set<string>): VersionFile {
-  let id = v.repo?.id ?? slugify(v.name);
-  if (!v.repo) {
-    const base = id;
-    let k = 2;
-    while (taken.has(id)) id = `${base}-${k++}`;
-  }
-  return snapshotToFile(id, v.name, v.data, v.description ? { description: v.description } : {});
-}
-
 function download(file: VersionFile) {
   const blob = new Blob([JSON.stringify(file, null, 2) + "\n"], { type: "application/json" });
   const a = document.createElement("a");
@@ -100,9 +90,8 @@ function StatusBadge({ v }: { v: Version }) {
 function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean }) {
   const s = useStore();
   const [msg, setMsg] = useState("");
-  const taken = new Set(s.versions.flatMap((x) => (x.repo ? [x.repo.id] : [])));
   const saveToRepo = async () => {
-    const file = toFile(v, taken);
+    const file = versionToFile(v, s.versions);
     setMsg("Salvando…");
     const res = await fetch("/api/versions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(file) });
     const body = await res.json();
@@ -176,7 +165,7 @@ function VersionCard({ v, canSaveToRepo }: { v: Version; canSaveToRepo: boolean 
         </button>
       </div>
       <div className="row">
-        <button onClick={() => download(toFile(v, taken))} title="Baixa o arquivo para colocar em /versions e commitar">
+        <button onClick={() => download(versionToFile(v, s.versions))} title="Baixa o arquivo para colocar em /versions e commitar">
           ⬇ JSON
         </button>
         {canSaveToRepo && (!v.repo || v.dirty) && (
@@ -245,8 +234,11 @@ export default function VersionsScreen({ canSaveToRepo }: { canSaveToRepo: boole
         className="localnote"
         title="Versões “repo” vêm de versions/ no repositório. Criar, editar ou renomear aqui não sai deste navegador. Para guardar: Exportar JSON e commitar em versions/."
       >
-        ⚠️ Edições aqui ficam só neste navegador. Para guardar, use <strong>Exportar JSON</strong>
-        {canSaveToRepo ? <> ou <strong>Salvar em versions/</strong></> : null}.
+        {canSaveToRepo ? (
+          <>💾 Rodando local: toda edição é gravada automaticamente em <strong>versions/</strong> — falta só commitar.</>
+        ) : (
+          <>⚠️ Edições aqui ficam só neste navegador. Para guardar, use <strong>Exportar JSON</strong>.</>
+        )}
       </div>
 
       <section className="vnew">

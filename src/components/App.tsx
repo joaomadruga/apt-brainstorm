@@ -1,8 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { entryName, type CatalogEntry } from "@/data/catalog";
+import { startRepoAutosave, type AutosaveStatus } from "@/lib/autosave";
 import { capture, type CaptureResult } from "@/lib/capture";
 import { floorFinishes, wallPalette } from "@/lib/materials";
 import { registerRepo, useStore } from "@/lib/store";
@@ -104,11 +105,12 @@ function PartitionToggle() {
   const toggle = useStore((s) => s.togglePartitions);
   return (
     <button
-      className={`partition-toggle ${closed ? "on" : ""}`}
+      className={`partition-toggle ${closed && has ? "on" : ""}`}
       onClick={toggle}
-      title={has ? "Anima as divisórias camarão do escritório" : "Esta versão não tem divisória camarão (móvel \"Divisória camarão\", grupo Escritório)"}
+      disabled={!has}
+      title={has ? "Anima as divisórias camarão do escritório" : "Adicione o móvel \"Divisória camarão (abre/fecha)\" (grupo Escritório) nesta versão"}
     >
-      {closed ? "Abrir escritório" : "Fechar escritório"}
+      {!has ? "Sem divisória nesta versão" : closed ? "Abrir escritório" : "Fechar escritório"}
     </button>
   );
 }
@@ -130,6 +132,7 @@ export default function App({
   const activeId = useStore((s) => s.activeId);
   const [shot, setShot] = useState<CaptureResult | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [autosave, setAutosave] = useState<AutosaveStatus>(null);
   // estado vem do localStorage: só renderiza no cliente
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setHydrated(true), []);
@@ -180,8 +183,53 @@ export default function App({
     if (useStore.getState().versions.length === 0) s.createVersion("Projeto original", "original");
   }, [hydrated, repoVersions]);
 
+  // URL compartilhável: ?v=<id da versão> abre a versão; sem ?v= mostra a tela de versões
+  const urlReady = useRef(false);
+  useEffect(() => {
+    if (!hydrated) return;
+    const apply = () => {
+      const id = new URLSearchParams(window.location.search).get("v");
+      const st = useStore.getState();
+      if (id && st.versions.some((v) => v.id === id)) {
+        if (st.activeId !== id || st.screen !== "editor") st.openVersion(id);
+      } else if (st.screen !== "versions") st.setScreen("versions");
+    };
+    apply();
+    urlReady.current = true;
+    window.addEventListener("popstate", apply);
+    return () => window.removeEventListener("popstate", apply);
+  }, [hydrated]);
+  useEffect(() => {
+    if (!urlReady.current) return;
+    const st = useStore.getState(); // lê do store (o efeito acima pode ter acabado de mudar)
+    const url = new URL(window.location.href);
+    const want = st.screen === "editor" && st.activeId ? st.activeId : null;
+    if (url.searchParams.get("v") === want) return;
+    if (want) url.searchParams.set("v", want);
+    else url.searchParams.delete("v");
+    window.history.pushState(null, "", url);
+  }, [hydrated, screen, activeId]);
+
+  // rodando local: cada edição grava versions/<id>.json (ver lib/autosave.ts)
+  useEffect(() => {
+    if (!hydrated || !canSaveToRepo) return;
+    return startRepoAutosave(setAutosave);
+  }, [hydrated, canSaveToRepo]);
+  useEffect(() => {
+    if (autosave?.state !== "saved") return;
+    const t = setTimeout(() => setAutosave(null), 2500);
+    return () => clearTimeout(t);
+  }, [autosave]);
+  const autosaveToast = autosave && <div className={`autosave ${autosave.state}`}>{autosave.text}</div>;
+
   if (!hydrated) return <div className="loading">Carregando…</div>;
-  if (screen === "versions" || !activeId) return <VersionsScreen canSaveToRepo={canSaveToRepo} />;
+  if (screen === "versions" || !activeId)
+    return (
+      <>
+        <VersionsScreen canSaveToRepo={canSaveToRepo} />
+        {autosaveToast}
+      </>
+    );
 
   return (
     <div className="app">
@@ -199,6 +247,7 @@ export default function App({
         )}
       </main>
       <PartitionToggle />
+      {autosaveToast}
       {shot && <CaptureModal shot={shot} onClose={() => setShot(null)} />}
     </div>
   );

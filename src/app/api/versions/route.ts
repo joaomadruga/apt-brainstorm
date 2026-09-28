@@ -1,7 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { registerCatalog } from "@/data/catalog";
 import { validateVersionFile, type VersionFile } from "@/lib/files";
-import { VERSIONS_DIR } from "@/lib/repo.server";
+import { VERSIONS_DIR, loadRepoFurniture } from "@/lib/repo.server";
 
 // Grava /versions/<id>.json. Só funciona rodando local (npm run dev):
 // em produção (Vercel) o disco é somente leitura e nada é salvo.
@@ -10,6 +11,9 @@ export async function POST(req: Request) {
     return Response.json({ error: "Só disponível em desenvolvimento local (npm run dev)." }, { status: 403 });
   }
   const file = (await req.json()) as VersionFile;
+  // o catálogo do servidor só conhece os móveis do código: carrega os de /furniture
+  // (a cada gravação, para pegar arquivos novos sem reiniciar o dev server)
+  registerCatalog(await loadRepoFurniture());
   const errors = validateVersionFile(file);
   if (errors.length) return Response.json({ error: "Versão inválida", errors }, { status: 400 });
   await fs.mkdir(VERSIONS_DIR, { recursive: true });

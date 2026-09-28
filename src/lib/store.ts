@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { catalogByType, registerCatalog, uid, type CatalogEntry, type FurnitureType, type Item } from "@/data/catalog";
 import type { FloorFinish } from "@/data/apartment";
-import { fileToSnapshot, normalizeSnapshot, originalSnapshot, type Snapshot, type VersionFile } from "./files";
+import { fileToSnapshot, normalizeSnapshot, originalSnapshot, slugify, snapshotToFile, type Snapshot, type VersionFile } from "./files";
 import { resolvePlan } from "./plan";
 
 export type { Snapshot } from "./files";
@@ -93,7 +93,7 @@ interface State extends Snapshot {
   markSavedToRepo: (id: string, file: VersionFile) => void;
 }
 
-const SNAP_KEYS = ["items", "removedWalls", "floors", "wallColors", "wallColor", "extraWalls", "rooms", "removedRooms"] as const;
+export const SNAP_KEYS = ["items", "removedWalls", "floors", "wallColors", "wallColor", "extraWalls", "rooms", "removedRooms"] as const;
 
 const snap = (s: Snapshot): Snapshot => ({
   items: s.items,
@@ -132,6 +132,21 @@ const fromFile = (f: VersionFile): Version => {
     repo: { id: f.id, updatedAt: f.updatedAt },
   };
 };
+
+/**
+ * Arquivo versions/<id>.json de uma versão. Versões criadas no navegador ganham um id
+ * a partir do nome, sem colidir com as que já estão no repo.
+ */
+export function versionToFile(v: Version, versions: Version[]): VersionFile {
+  let id = v.repo?.id ?? slugify(v.name);
+  if (!v.repo) {
+    const taken = new Set([...versions.flatMap((x) => (x.repo ? [x.repo.id] : [])), ...repoFiles.map((f) => f.id)]);
+    const base = id;
+    let k = 2;
+    while (taken.has(id)) id = `${base}-${k++}`;
+  }
+  return snapshotToFile(id, v.name, v.data, v.description ? { description: v.description } : {});
+}
 
 /** arquivos de /versions carregados no build (preenchido pelo App) */
 export let repoFiles: VersionFile[] = [];
