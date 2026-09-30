@@ -1,9 +1,9 @@
 {
   "id": "projeto-arquiteta",
   "name": "Projeto da arquiteta",
-  "description": "Esboço da arquiteta: cozinha integrada com jantar de 6 lugares, varanda integrada à sala TV, área de serviço fechada, quarto vira escritório.",
+  "description": "Esboço da arquiteta: cozinha integrada com mesa redonda de 6 lugares, varanda integrada à sala TV, área de serviço fechada, quarto vira escritório.",
   "author": "Arquiteta",
-  "updatedAt": "2026-09-29T12:00:00Z",
+  "updatedAt": "2026-09-29T13:00:00Z",
   "items": [
     {
       "id": "fx-bancada-3.29-6.97",
@@ -20,9 +20,9 @@
     {
       "id": "fx-geladeira-5.82-6.93",
       "type": "geladeira",
-      "rot": 90,
-      "x": 0.64,
-      "y": 5.7,
+      "rot": 0,
+      "x": 1.89,
+      "y": 7.245,
       "w": 0.56,
       "d": 0.63,
       "h": 1.8,
@@ -136,83 +136,6 @@
       "color": "#8b6a4f"
     },
     {
-      "id": "mesa-jantar",
-      "type": "mesaJantar",
-      "x": 2.85,
-      "y": 5.7,
-      "rot": 0,
-      "w": 1.6,
-      "d": 1.0,
-      "h": 0.76,
-      "color": "#8b6a4f"
-    },
-    {
-      "id": "cadeira-n1",
-      "type": "cadeira",
-      "x": 2.45,
-      "y": 6.45,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
-      "id": "cadeira-n2",
-      "type": "cadeira",
-      "x": 3.25,
-      "y": 6.45,
-      "rot": 0,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
-      "id": "cadeira-o",
-      "type": "cadeira",
-      "x": 1.8,
-      "y": 5.7,
-      "rot": 90,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
-      "id": "cadeira-l1",
-      "type": "cadeira",
-      "x": 3.9,
-      "y": 5.95,
-      "rot": 270,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
-      "id": "cadeira-l2",
-      "type": "cadeira",
-      "x": 3.9,
-      "y": 5.45,
-      "rot": 270,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
-      "id": "cadeira-s",
-      "type": "cadeira",
-      "x": 3.25,
-      "y": 4.95,
-      "rot": 180,
-      "w": 0.45,
-      "d": 0.5,
-      "h": 0.85,
-      "color": "#3a2a1f"
-    },
-    {
       "id": "sofa-sala-tv",
       "type": "sofa",
       "x": 6.0,
@@ -255,6 +178,94 @@
       "d": 0.45,
       "h": 0.75,
       "color": "#8b6a4f"
+    },
+    {
+      "id": "mesa-jantar",
+      "type": "mesa-redonda",
+      "x": 3.75,
+      "y": 5.15,
+      "rot": 0,
+      "w": 1.1,
+      "d": 1.1,
+      "h": 0.76,
+      "color": "#8b6a4f"
+    },
+    {
+      "id": "cadeira-1",
+      "type": "cadeira",
+      "x": 3.75,
+      "y": 5.93,
+      "rot": 0,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-2",
+      "type": "cadeira",
+      "x": 3.075,
+      "y": 5.54,
+      "rot": 60,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-3",
+      "type": "cadeira",
+      "x": 3.075,
+      "y": 4.76,
+      "rot": 120,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-4",
+      "type": "cadeira",
+      "x": 3.75,
+      "y": 4.37,
+      "rot": 180,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-5",
+      "type": "cadeira",
+      "x": 4.425,
+      "y": 4.76,
+      "rot": 240,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-6",
+      "type": "cadeira",
+      "x": 4.425,
+      "y": 5.54,
+      "rot": 300,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "tv-sala",
+      "type": "painel-tv",
+      "x": 6.05,
+      "y": 5.756,
+      "rot": 0,
+      "w": 1.29,
+      "d": 0.35,
+      "h": 2.6,
+      "color": "#0b0b0b"
     }
   ],
   "removedWalls": [
@@ -264,22 +275,12 @@
   "extraWalls": [
     {
       "id": "cozinha-varanda",
-      "name": "Parede área de serviço / sala TV (EA27)",
+      "name": "Parede área de serviço / sala TV",
       "kind": "int",
       "x0": 4.73,
       "y0": 5.931,
       "x1": 7.126,
-      "y1": 6.056,
-      "openings": [
-        {
-          "kind": "window",
-          "label": "EA27",
-          "a0": 5.931,
-          "a1": 6.961,
-          "sill": 1.1,
-          "head": 2.2
-        }
-      ]
+      "y1": 6.056
     },
     {
       "id": "sala-quarto",

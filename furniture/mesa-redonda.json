@@ -1,0 +1,15 @@
+{
+  "type": "mesa-redonda",
+  "name": "Mesa de jantar redonda",
+  "group": "Jantar",
+  "w": 1.1,
+  "d": 1.1,
+  "h": 0.76,
+  "color": "#8b6a4f",
+  "prompt": "round wooden dining table with a central pedestal base",
+  "parts": [
+    { "shape": "cylinder", "x": 0, "y": 0.975, "z": 0, "sx": 1, "sy": 0.05, "sz": 1, "color": "base", "roughness": 0.5 },
+    { "shape": "cylinder", "x": 0, "y": 0.5, "z": 0, "sx": 0.16, "sy": 0.92, "sz": 0.16, "color": "dark", "taper": 0.8 },
+    { "shape": "cylinder", "x": 0, "y": 0.02, "z": 0, "sx": 0.5, "sy": 0.04, "sz": 0.5, "color": "dark" }
+  ]
+}
