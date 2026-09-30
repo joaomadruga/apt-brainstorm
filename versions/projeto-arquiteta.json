@@ -1,0 +1,484 @@
+{
+  "id": "projeto-arquiteta",
+  "name": "Projeto da arquiteta",
+  "description": "Esboço da arquiteta: cozinha integrada com jantar de 6 lugares, varanda integrada à sala TV, área de serviço fechada, quarto vira escritório.",
+  "author": "Arquiteta",
+  "updatedAt": "2026-09-29T12:00:00Z",
+  "items": [
+    {
+      "id": "fx-bancada-3.29-6.97",
+      "type": "bancada",
+      "rot": 0,
+      "x": 3.72,
+      "y": 7.271,
+      "w": 3.0,
+      "d": 0.602,
+      "h": 0.9,
+      "color": "#e8e4dc",
+      "fixed": true
+    },
+    {
+      "id": "fx-geladeira-5.82-6.93",
+      "type": "geladeira",
+      "rot": 90,
+      "x": 0.64,
+      "y": 5.7,
+      "w": 0.56,
+      "d": 0.63,
+      "h": 1.8,
+      "color": "#d7dadd",
+      "fixed": true
+    },
+    {
+      "id": "fx-tanque-6.46-6.84",
+      "type": "tanque",
+      "rot": 0,
+      "x": 6.735,
+      "y": 7.06,
+      "w": 0.55,
+      "d": 0.44,
+      "h": 0.85,
+      "color": "#f2f2f2",
+      "fixed": true
+    },
+    {
+      "id": "fx-box-2.93-0.76",
+      "type": "box",
+      "rot": 0,
+      "x": 3.333,
+      "y": 1.201,
+      "w": 0.814,
+      "d": 0.879,
+      "h": 2,
+      "color": "#bfe3ee",
+      "fixed": true
+    },
+    {
+      "id": "fx-pia-3.74-0.76",
+      "type": "pia",
+      "rot": 180,
+      "x": 4.141,
+      "y": 1.011,
+      "w": 0.801,
+      "d": 0.499,
+      "h": 0.85,
+      "color": "#efece6",
+      "fixed": true
+    },
+    {
+      "id": "fx-vaso-2.93-1.79",
+      "type": "vaso",
+      "rot": 90,
+      "x": 3.133,
+      "y": 1.99,
+      "w": 0.4,
+      "d": 0.414,
+      "h": 0.75,
+      "color": "#fafafa",
+      "fixed": true
+    },
+    {
+      "id": "fx-pia-0.33-4.55",
+      "type": "pia",
+      "rot": 0,
+      "x": 0.738,
+      "y": 4.811,
+      "w": 0.824,
+      "d": 0.522,
+      "h": 0.85,
+      "color": "#efece6",
+      "fixed": true
+    },
+    {
+      "id": "fx-vaso-1.26-4.63",
+      "type": "vaso",
+      "rot": 0,
+      "x": 1.48,
+      "y": 4.851,
+      "w": 0.44,
+      "d": 0.442,
+      "h": 0.75,
+      "color": "#fafafa",
+      "fixed": true
+    },
+    {
+      "id": "fx-box-1.85-3.90",
+      "type": "box",
+      "rot": 0,
+      "x": 2.254,
+      "y": 4.377,
+      "w": 0.815,
+      "d": 0.951,
+      "h": 2,
+      "color": "#bfe3ee",
+      "fixed": true
+    },
+    {
+      "id": "maquina-as",
+      "type": "maquina",
+      "x": 5.75,
+      "y": 7.27,
+      "rot": 0,
+      "w": 0.6,
+      "d": 0.6,
+      "h": 0.85,
+      "color": "#f2f2f2"
+    },
+    {
+      "id": "aparador-hall",
+      "type": "aparador",
+      "x": -0.625,
+      "y": 7.395,
+      "rot": 0,
+      "w": 1.75,
+      "d": 0.35,
+      "h": 0.9,
+      "color": "#8b6a4f"
+    },
+    {
+      "id": "mesa-jantar",
+      "type": "mesaJantar",
+      "x": 2.85,
+      "y": 5.7,
+      "rot": 0,
+      "w": 1.6,
+      "d": 1.0,
+      "h": 0.76,
+      "color": "#8b6a4f"
+    },
+    {
+      "id": "cadeira-n1",
+      "type": "cadeira",
+      "x": 2.45,
+      "y": 6.45,
+      "rot": 0,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-n2",
+      "type": "cadeira",
+      "x": 3.25,
+      "y": 6.45,
+      "rot": 0,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-o",
+      "type": "cadeira",
+      "x": 1.8,
+      "y": 5.7,
+      "rot": 90,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-l1",
+      "type": "cadeira",
+      "x": 3.9,
+      "y": 5.95,
+      "rot": 270,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-l2",
+      "type": "cadeira",
+      "x": 3.9,
+      "y": 5.45,
+      "rot": 270,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "cadeira-s",
+      "type": "cadeira",
+      "x": 3.25,
+      "y": 4.95,
+      "rot": 180,
+      "w": 0.45,
+      "d": 0.5,
+      "h": 0.85,
+      "color": "#3a2a1f"
+    },
+    {
+      "id": "sofa-sala-tv",
+      "type": "sofa",
+      "x": 6.0,
+      "y": 3.95,
+      "rot": 180,
+      "w": 2.2,
+      "d": 0.9,
+      "h": 0.8,
+      "color": "#8a8f98"
+    },
+    {
+      "id": "cama-suite",
+      "type": "camaCasal",
+      "x": 1.38,
+      "y": 2.45,
+      "rot": 90,
+      "w": 1.4,
+      "d": 1.9,
+      "h": 0.55,
+      "color": "#e8e4dc"
+    },
+    {
+      "id": "armario-suite",
+      "type": "guardaRoupa",
+      "x": 1.601,
+      "y": 0.971,
+      "rot": 180,
+      "w": 2.38,
+      "d": 0.42,
+      "h": 2.4,
+      "color": "#8b6a4f"
+    },
+    {
+      "id": "mesa-escritorio",
+      "type": "escrivaninha",
+      "x": 6.03,
+      "y": 0.986,
+      "rot": 180,
+      "w": 1.55,
+      "d": 0.45,
+      "h": 0.75,
+      "color": "#8b6a4f"
+    }
+  ],
+  "removedWalls": [
+    "cozinha-sala",
+    "sala-varanda"
+  ],
+  "extraWalls": [
+    {
+      "id": "cozinha-varanda",
+      "name": "Parede área de serviço / sala TV (EA27)",
+      "kind": "int",
+      "x0": 4.73,
+      "y0": 5.931,
+      "x1": 7.126,
+      "y1": 6.056,
+      "openings": [
+        {
+          "kind": "window",
+          "label": "EA27",
+          "a0": 5.931,
+          "a1": 6.961,
+          "sill": 1.1,
+          "head": 2.2
+        }
+      ]
+    },
+    {
+      "id": "sala-quarto",
+      "name": "Parede sala TV / escritório",
+      "kind": "int",
+      "x0": 4.541,
+      "y0": 3.336,
+      "x1": 5.826,
+      "y1": 3.446
+    },
+    {
+      "id": "suite-circ",
+      "name": "Parede suíte / circulação",
+      "kind": "int",
+      "x0": 2.791,
+      "y0": 0.761,
+      "x1": 2.926,
+      "y1": 3.901,
+      "openings": [
+        {
+          "kind": "door",
+          "label": "P2",
+          "a0": 3.0,
+          "a1": 3.76,
+          "sill": 0,
+          "head": 2.1,
+          "hinge": "end",
+          "swing": -1
+        }
+      ]
+    }
+  ],
+  "rooms": [
+    {
+      "id": "cozinha",
+      "name": "Cozinha integrada",
+      "floor": "porcelanato",
+      "label": [
+        2.2,
+        6.6
+      ],
+      "poly": [
+        [
+          0.321,
+          5.187
+        ],
+        [
+          2.786,
+          5.187
+        ],
+        [
+          2.786,
+          5.946
+        ],
+        [
+          4.73,
+          5.946
+        ],
+        [
+          4.73,
+          6.056
+        ],
+        [
+          5.3,
+          6.056
+        ],
+        [
+          5.3,
+          7.572
+        ],
+        [
+          0.321,
+          7.572
+        ]
+      ]
+    },
+    {
+      "id": "area-servico",
+      "name": "A.S.",
+      "floor": "porcelanato",
+      "label": [
+        6.0,
+        6.6
+      ],
+      "poly": [
+        [
+          5.3,
+          6.056
+        ],
+        [
+          7.126,
+          6.056
+        ],
+        [
+          7.126,
+          6.527
+        ],
+        [
+          7.041,
+          6.527
+        ],
+        [
+          7.041,
+          7.287
+        ],
+        [
+          6.406,
+          7.287
+        ],
+        [
+          6.406,
+          7.572
+        ],
+        [
+          5.3,
+          7.572
+        ]
+      ]
+    },
+    {
+      "id": "sala",
+      "name": "Sala TV",
+      "floor": "madeira",
+      "label": [
+        6.0,
+        5.1
+      ],
+      "poly": [
+        [
+          2.786,
+          3.446
+        ],
+        [
+          5.826,
+          3.446
+        ],
+        [
+          5.826,
+          3.461
+        ],
+        [
+          7.126,
+          3.461
+        ],
+        [
+          7.126,
+          5.931
+        ],
+        [
+          4.73,
+          5.931
+        ],
+        [
+          4.73,
+          5.946
+        ],
+        [
+          2.786,
+          5.946
+        ]
+      ]
+    },
+    {
+      "id": "quarto",
+      "name": "Escritório",
+      "floor": "madeira",
+      "label": [
+        5.9,
+        2.2
+      ],
+      "poly": [
+        [
+          4.666,
+          0.761
+        ],
+        [
+          7.046,
+          0.761
+        ],
+        [
+          7.046,
+          1.816
+        ],
+        [
+          7.141,
+          1.816
+        ],
+        [
+          7.141,
+          3.336
+        ],
+        [
+          4.666,
+          3.336
+        ]
+      ]
+    }
+  ],
+  "removedRooms": [
+    "varanda"
+  ]
+}
